@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de Ventas</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .main-count {
+      font-size: 6rem;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      font-size: 1.5rem;
+    }
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-count" id="totalOrders">0 Pedidos</div>
+  <div class="stats">
+    <div id="ventasHoy">Ventas hoy: $0</div>
+    <div id="ticketPromedio">Ticket promedio: $0</div>
+    <div id="pedidosMes">Pedidos del mes: 0</div>
+  </div>
+
+  <!-- Confetti container -->
+  <canvas id="confetti" class="confetti"></canvas>
+
+  <!-- Audio -->
+  <audio id="sound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    const sheetId = '1CrMLJ2SJk_NO6T_SaSEwJFQkTYvtCNbUpc90wIc2_9U';
+    const sheetRange = 'Hoja1';
+    const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=TU_API_KEY_AQUI`;
+
+    let lastCount = 0;
+
+    async function fetchData() {
+      try {
+        const res = await fetch(sheetUrl);
+        const data = await res.json();
+        const rows = data.values || [];
+        const today = new Date().toISOString().split('T')[0];
+        let total = 0, countToday = 0, totalToday = 0;
+
+        rows.slice(1).forEach(row => {
+          const [fecha, , totalVenta] = row;
+          total++;
+
+          if (fecha && fecha.startsWith(today)) {
+            countToday++;
+            totalToday += parseFloat(totalVenta);
+          }
+        });
+
+        const ticket = totalToday / (countToday || 1);
+
+        document.getElementById('totalOrders').textContent = `${total} Pedidos`;
+        document.getElementById('ventasHoy').textContent = `Ventas hoy: $${totalToday.toFixed(2)}`;
+        document.getElementById('ticketPromedio').textContent = `Ticket promedio: $${ticket.toFixed(2)}`;
+        document.getElementById('pedidosMes').textContent = `Pedidos del mes: ${total}`; // simplificado
+
+        if (total > lastCount) {
+          celebrate();
+          lastCount = total;
+        }
+
+      } catch (err) {
+        console.error('Error al cargar datos:', err);
+      }
+    }
+
+    function celebrate() {
+      const sound = document.getElementById('sound');
+      sound.play();
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.6 }
+      });
+    }
+
+    setInterval(fetchData, 5000); // actualiza cada 5 segundos
+    fetchData();
+  </script>
+</body>
+</html>
