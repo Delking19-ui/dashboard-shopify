@@ -51,62 +51,83 @@
   <audio id="sound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script>
-    const sheetId = '1CrMLJ2SJk_NO6T_SaSEwJFQkTYvtCNbUpc90wIc2_9U';
-    const sheetRange = 'Pedidos'; // Codificado
-    const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
-    const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
+<script>
+  const sheetId = '1CrMLJ2SJk_NO6T_SaSEwJFQkTYvtCNbUpc90wIc2_9U';
+  const sheetRange = 'Pedidos';
+  const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
+  const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
 
-    let lastCount = 0;
+  let lastCount = 0;
 
-    async function fetchData() {
-      try {
-        const res = await fetch(sheetUrl);
-        const data = await res.json();
-        const rows = data.values || [];
+  function formatearMoneda(numero) {
+    return parseInt(numero).toLocaleString('es-CO'); // Ej: 149.800
+  }
 
-        const today = new Date().toISOString().split('T')[0];
-        let total = 0, countToday = 0, totalToday = 0;
+  function hablar(texto) {
+    const speech = new SpeechSynthesisUtterance(texto);
+    speech.lang = 'es-CO';
+    speech.rate = 1;
+    window.speechSynthesis.speak(speech);
+  }
 
-        rows.slice(1).forEach(row => {
-          const [fecha, , totalVenta] = row;
-          total++;
+  async function fetchData() {
+    try {
+      const res = await fetch(sheetUrl);
+      const data = await res.json();
+      const rows = data.values || [];
 
-          if (fecha && fecha.startsWith(today)) {
-            countToday++;
-            totalToday += parseFloat(totalVenta);
-          }
-        });
+      const today = new Date().toISOString().split('T')[0];
+      let total = 0, countToday = 0, totalToday = 0;
+      let nuevoCliente = '', nuevoMonto = 0;
 
-        const ticket = totalToday / (countToday || 1);
+      rows.slice(1).forEach((row, index) => {
+        const [fecha, cliente, totalVenta] = row;
+        total++;
 
-        document.getElementById('totalOrders').textContent = `${total} Pedidos`;
-        document.getElementById('ventasHoy').textContent = `Ventas hoy: $${totalToday.toFixed(2)}`;
-        document.getElementById('ticketPromedio').textContent = `Ticket promedio: $${ticket.toFixed(2)}`;
-        document.getElementById('pedidosMes').textContent = `Pedidos del mes: ${total}`;
-
-        if (total > lastCount) {
-          celebrate();
-          lastCount = total;
+        if (fecha && fecha.startsWith(today)) {
+          countToday++;
+          totalToday += parseFloat(totalVenta);
         }
 
-      } catch (err) {
-        console.error('Error al cargar datos:', err);
-      }
-    }
-
-    function celebrate() {
-      const sound = document.getElementById('sound');
-      sound.play();
-      confetti({
-        particleCount: 200,
-        spread: 100,
-        origin: { y: 0.6 }
+        // Capturamos el último pedido (más reciente)
+        if (index === rows.length - 2) {
+          nuevoCliente = cliente;
+          nuevoMonto = totalVenta;
+        }
       });
-    }
 
-    setInterval(fetchData, 5000);
-    fetchData();
-  </script>
+      const ticket = totalToday / (countToday || 1);
+
+      document.getElementById('totalOrders').textContent = `${total} Pedidos`;
+      document.getElementById('ventasHoy').textContent = `Ventas hoy: $${formatearMoneda(totalToday)}`;
+      document.getElementById('ticketPromedio').textContent = `Ticket promedio: $${formatearMoneda(ticket)}`;
+      document.getElementById('pedidosMes').textContent = `Pedidos del mes: ${total}`;
+
+      if (total > lastCount) {
+        celebrate();
+        const mensaje = `¡Nuevo pedido de ${nuevoCliente} por ${formatearMoneda(nuevoMonto)} pesos!`;
+        hablar(mensaje);
+        lastCount = total;
+      }
+
+    } catch (err) {
+      console.error('Error al cargar datos:', err);
+    }
+  }
+
+  function celebrate() {
+    const sound = document.getElementById('sound');
+    sound.play();
+    confetti({
+      particleCount: 200,
+      spread: 100,
+      origin: { y: 0.6 }
+    });
+  }
+
+  setInterval(fetchData, 5000);
+  fetchData();
+</script>
+
 </body>
 </html>
