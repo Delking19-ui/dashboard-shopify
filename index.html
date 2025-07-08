@@ -44,17 +44,18 @@
     <div id="pedidosMes">Pedidos del mes: 0</div>
   </div>
 
-  <!-- Confetti container -->
+  <!-- Confetti -->
   <canvas id="confetti" class="confetti"></canvas>
 
-  <!-- Audio -->
+  <!-- Sonido de cajera -->
   <audio id="sound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
     const sheetId = '1CrMLJ2SJk_NO6T_SaSEwJFQkTYvtCNbUpc90wIc2_9U';
-    const sheetRange = 'Hoja1';
-    const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto`;
+    const sheetRange = 'Pedidos%20Shopify'; // Codificado
+    const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
+    const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
 
     let lastCount = 0;
 
@@ -63,6 +64,7 @@
         const res = await fetch(sheetUrl);
         const data = await res.json();
         const rows = data.values || [];
+
         const today = new Date().toISOString().split('T')[0];
         let total = 0, countToday = 0, totalToday = 0;
 
@@ -81,7 +83,7 @@
         document.getElementById('totalOrders').textContent = `${total} Pedidos`;
         document.getElementById('ventasHoy').textContent = `Ventas hoy: $${totalToday.toFixed(2)}`;
         document.getElementById('ticketPromedio').textContent = `Ticket promedio: $${ticket.toFixed(2)}`;
-        document.getElementById('pedidosMes').textContent = `Pedidos del mes: ${total}`; // simplificado
+        document.getElementById('pedidosMes').textContent = `Pedidos del mes: ${total}`;
 
         if (total > lastCount) {
           celebrate();
@@ -103,7 +105,7 @@
       });
     }
 
-    setInterval(fetchData, 5000); // actualiza cada 5 segundos
+    setInterval(fetchData, 5000);
     fetchData();
   </script>
 </body>
