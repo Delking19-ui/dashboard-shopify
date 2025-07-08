@@ -1,77 +1,112 @@
-<script>
-  const sheetId = '1CrMLJ2SJk_NO6T_SaSEwJFQkTYvtCNbUpc90wIc2_9U';
-  const sheetRange = 'Pedidos';
-  const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
-  const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
-
-  let lastCount = 0;
-
-  function formatearMoneda(numero) {
-    return parseInt(numero).toLocaleString('es-CO'); // Ej: 149.800
-  }
-
-  function hablar(texto) {
-    const speech = new SpeechSynthesisUtterance(texto);
-    speech.lang = 'es-CO';
-    speech.rate = 1;
-    window.speechSynthesis.speak(speech);
-  }
-
-  async function fetchData() {
-    try {
-      const res = await fetch(sheetUrl);
-      const data = await res.json();
-      const rows = data.values || [];
-
-      const today = new Date().toISOString().split('T')[0];
-      let total = 0, countToday = 0, totalToday = 0;
-      let nuevoCliente = '', nuevoMonto = 0;
-
-      rows.slice(1).forEach((row, index) => {
-        const [fecha, cliente, totalVenta] = row;
-        total++;
-
-        if (fecha && fecha.startsWith(today)) {
-          countToday++;
-          totalToday += parseFloat(totalVenta);
-        }
-
-        // Capturamos el último pedido (más reciente)
-        if (index === rows.length - 2) {
-          nuevoCliente = cliente;
-          nuevoMonto = totalVenta;
-        }
-      });
-
-      const ticket = totalToday / (countToday || 1);
-
-      document.getElementById('totalOrders').textContent = `${total} Pedidos`;
-      document.getElementById('ventasHoy').textContent = `Ventas hoy: $${formatearMoneda(totalToday)}`;
-      document.getElementById('ticketPromedio').textContent = `Ticket promedio: $${formatearMoneda(ticket)}`;
-      document.getElementById('pedidosMes').textContent = `Pedidos del mes: ${total}`;
-
-      if (total > lastCount) {
-        celebrate();
-        const mensaje = `¡Nuevo pedido de ${nuevoCliente} por ${formatearMoneda(nuevoMonto)} pesos!`;
-        hablar(mensaje);
-        lastCount = total;
-      }
-
-    } catch (err) {
-      console.error('Error al cargar datos:', err);
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de Ventas</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
     }
-  }
+    .main-count {
+      font-size: 6rem;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      font-size: 1.5rem;
+    }
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-count" id="totalOrders">0 Pedidos</div>
+  <div class="stats">
+    <div id="ventasHoy">Ventas hoy: $0</div>
+    <div id="ticketPromedio">Ticket promedio: $0</div>
+    <div id="pedidosMes">Pedidos del mes: 0</div>
+  </div>
 
-  function celebrate() {
-    const sound = document.getElementById('sound');
-    sound.play();
-    confetti({
-      particleCount: 200,
-      spread: 100,
-      origin: { y: 0.6 }
-    });
-  }
+  <!-- Confetti -->
+  <canvas id="confetti" class="confetti"></canvas>
 
-  setInterval(fetchData, 5000);
-  fetchData();
-</script>
+  <!-- Sonido de cajera -->
+  <audio id="sound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    const sheetId = '1CrMLJ2SJk_NO6T_SaSEwJFQkTYvtCNbUpc90wIc2_9U';
+    const sheetRange = 'Pedidos'; // Codificado
+    const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
+    const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
+
+    let lastCount = 0;
+
+    async function fetchData() {
+      try {
+        const res = await fetch(sheetUrl);
+        const data = await res.json();
+        const rows = data.values || [];
+
+        const today = new Date().toISOString().split('T')[0];
+        let total = 0, countToday = 0, totalToday = 0;
+
+        rows.slice(1).forEach(row => {
+          const [fecha, , totalVenta] = row;
+          total++;
+
+          if (fecha && fecha.startsWith(today)) {
+            countToday++;
+            totalToday += parseFloat(totalVenta);
+          }
+        });
+
+        const ticket = totalToday / (countToday || 1);
+
+        document.getElementById('totalOrders').textContent = `${total} Pedidos`;
+        document.getElementById('ventasHoy').textContent = `Ventas hoy: $${totalToday.toFixed(2)}`;
+        document.getElementById('ticketPromedio').textContent = `Ticket promedio: $${ticket.toFixed(2)}`;
+        document.getElementById('pedidosMes').textContent = `Pedidos del mes: ${total}`;
+
+        if (total > lastCount) {
+          celebrate();
+          lastCount = total;
+        }
+
+      } catch (err) {
+        console.error('Error al cargar datos:', err);
+      }
+    }
+
+    function celebrate() {
+      const sound = document.getElementById('sound');
+      sound.play();
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.6 }
+      });
+    }
+
+    setInterval(fetchData, 5000);
+    fetchData();
+  </script>
+</body>
+</html>
