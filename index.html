@@ -13,18 +13,25 @@
       justify-content: center;
       height: 100vh;
       margin: 0;
+      text-align: center;
     }
+
     .main-count {
       font-size: 6rem;
       font-weight: bold;
       margin-bottom: 30px;
+      color: #333;
     }
+
     .stats {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 60px;
       font-size: 1.5rem;
+      color: #555;
     }
+
     .confetti {
       position: fixed;
       top: 0;
@@ -34,9 +41,26 @@
       pointer-events: none;
       z-index: 1000;
     }
+
+    #activarSonido {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      z-index: 2000;
+    }
   </style>
 </head>
 <body>
+
+  <button id="activarSonido">🔊 Activar sonido</button>
+
   <div class="main-count" id="totalOrders">0 Pedidos</div>
   <div class="stats">
     <div id="ventasHoy">Ventas hoy: $0</div>
@@ -47,87 +71,99 @@
   <!-- Confetti -->
   <canvas id="confetti" class="confetti"></canvas>
 
-  <!-- Sonido de cajera -->
+  <!-- Sonido -->
   <audio id="sound" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/Rappi_SONIDO_de_RAPPI_cuando_llega_un_PEDIDO_-_Sonidos_mp3cut.net.mp3" preload="auto"></audio>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script>
-  const sheetId = '1CrMLJ2SJk_NO6T_SaSEwJFQkTYvtCNbUpc90wIc2_9U';
-  const sheetRange = 'Pedidos';
-  const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
-  const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
 
-  let lastCount = 0;
+  <script>
+    const sheetId = '1CrMLJ2SJk_NO6T_SaSEwJFQkTYvtCNbUpc90wIc2_9U';
+    const sheetRange = 'Pedidos';
+    const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
+    const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
+    const sound = document.getElementById('sound');
+    let lastCount = 0;
 
-  function formatearMoneda(numero) {
-    return parseInt(numero).toLocaleString('es-CO'); // Ej: 149.800
-  }
+    // Activar sonido por política de navegador
+    document.getElementById('activarSonido').addEventListener('click', () => {
+      sound.play().then(() => {
+        sound.pause();
+        sound.currentTime = 0;
+        document.getElementById('activarSonido').style.display = 'none';
+      });
+    });
 
-  function hablar(texto) {
-    const speech = new SpeechSynthesisUtterance(texto);
-    speech.lang = 'es-CO';
-    speech.rate = 1;
-    window.speechSynthesis.speak(speech);
-  }
+    function formatearMoneda(numero) {
+      return parseInt(numero).toLocaleString('es-CO'); // Ej: 149.800
+    }
 
-  async function fetchData() {
-    try {
-      const res = await fetch(sheetUrl);
-      const data = await res.json();
-      const rows = data.values || [];
-
-      const today = new Date().toISOString().split('T')[0];
-      let total = 0, countToday = 0, totalToday = 0;
-      let nuevoCliente = '', nuevoMonto = 0;
-
-      rows.slice(1).forEach((row, index) => {
-        const [fecha, cliente, totalVenta] = row;
-        total++;
-
-        if (fecha && fecha.startsWith(today)) {
-          countToday++;
-          totalToday += parseFloat(totalVenta);
-        }
-
-        // Capturamos el último pedido (más reciente)
-        if (index === rows.length - 2) {
-          nuevoCliente = cliente;
-          nuevoMonto = totalVenta;
-        }
+    function celebrarConSonidoYVoz(cliente, monto) {
+      // 🎊 Confeti
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.6 }
       });
 
-      const ticket = totalToday / (countToday || 1);
+      // 🔊 Sonido
+      sound.currentTime = 0;
+      sound.play();
 
-      document.getElementById('totalOrders').textContent = `${total} Pedidos`;
-      document.getElementById('ventasHoy').textContent = `Ventas hoy: $${formatearMoneda(totalToday)}`;
-      document.getElementById('ticketPromedio').textContent = `Ticket promedio: $${formatearMoneda(ticket)}`;
-      document.getElementById('pedidosMes').textContent = `Pedidos del mes: ${total}`;
-
-      if (total > lastCount) {
-        celebrate();
-        const mensaje = `¡Nuevo pedido de ${nuevoCliente} por ${formatearMoneda(nuevoMonto)} pesos!`;
-        hablar(mensaje);
-        lastCount = total;
-      }
-
-    } catch (err) {
-      console.error('Error al cargar datos:', err);
+      // 🗣️ Hablar después del sonido
+      sound.onended = () => {
+        const mensaje = `¡Nuevo pedido de ${cliente} por ${formatearMoneda(monto)} pesos!`;
+        const speech = new SpeechSynthesisUtterance(mensaje);
+        speech.lang = 'es-CO';
+        speech.rate = 1;
+        window.speechSynthesis.speak(speech);
+      };
     }
-  }
 
-  function celebrate() {
-    const sound = document.getElementById('sound');
-    sound.play();
-    confetti({
-      particleCount: 200,
-      spread: 100,
-      origin: { y: 0.6 }
-    });
-  }
+    async function fetchData() {
+      try {
+        const res = await fetch(sheetUrl);
+        const data = await res.json();
+        const rows = data.values || [];
 
-  setInterval(fetchData, 5000);
-  fetchData();
-</script>
+        const today = new Date().toISOString().split('T')[0];
+        let total = 0, countToday = 0, totalToday = 0;
+        let nuevoCliente = '', nuevoMonto = 0;
 
+        rows.slice(1).forEach((row, index) => {
+          const [fecha, cliente, totalVenta] = row;
+          total++;
+
+          if (fecha && fecha.startsWith(today)) {
+            countToday++;
+            totalToday += parseFloat(totalVenta);
+          }
+
+          // Último pedido
+          if (index === rows.length - 2) {
+            nuevoCliente = cliente;
+            nuevoMonto = totalVenta;
+          }
+        });
+
+        const ticket = totalToday / (countToday || 1);
+
+        document.getElementById('totalOrders').textContent = `${total} Pedidos`;
+        document.getElementById('ventasHoy').textContent = `Ventas hoy: $${formatearMoneda(totalToday)}`;
+        document.getElementById('ticketPromedio').textContent = `Ticket promedio: $${formatearMoneda(ticket)}`;
+        document.getElementById('pedidosMes').textContent = `Pedidos del mes: ${total}`;
+
+        if (total > lastCount) {
+          celebrarConSonidoYVoz(nuevoCliente, nuevoMonto);
+          lastCount = total;
+        }
+
+      } catch (err) {
+        console.error('Error al cargar datos:', err);
+      }
+    }
+
+    setInterval(fetchData, 5000);
+    fetchData();
+  </script>
 </body>
 </html>
