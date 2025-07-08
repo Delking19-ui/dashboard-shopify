@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Panel de Ventas</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -10,28 +11,25 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
+      justify-content: flex-start;
+      padding: 20px;
       margin: 0;
-      text-align: center;
     }
-
     .main-count {
-      font-size: 6rem;
+      font-size: 4rem;
       font-weight: bold;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       color: #333;
     }
-
     .stats {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 60px;
-      font-size: 1.5rem;
+      gap: 30px;
+      font-size: 1.2rem;
       color: #555;
+      margin-bottom: 30px;
     }
-
     .confetti {
       position: fixed;
       top: 0;
@@ -41,37 +39,30 @@
       pointer-events: none;
       z-index: 1000;
     }
-
-    #activarSonido {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      padding: 10px 20px;
-      background: #28a745;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-      z-index: 2000;
+    canvas.chart {
+      max-width: 800px;
+      margin-bottom: 40px;
     }
   </style>
 </head>
 <body>
-
-  <button id="activarSonido">🔊 Activar sonido</button>
 
   <div class="main-count" id="totalOrders">0 Pedidos</div>
   <div class="stats">
     <div id="ventasHoy">Ventas hoy: $0</div>
     <div id="ticketPromedio">Ticket promedio: $0</div>
     <div id="pedidosMes">Pedidos del mes: 0</div>
+    <div id="pedidosHoy">Pedidos de hoy: 0</div>
   </div>
 
   <!-- Confetti -->
   <canvas id="confetti" class="confetti"></canvas>
 
-  <!-- Audios precargados -->
+  <!-- Graficas -->
+  <canvas id="graficaVentas" class="chart"></canvas>
+  <canvas id="graficaProyeccion" class="chart"></canvas>
+
+  <!-- Audios -->
   <audio id="audio1" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/Rappi_SONIDO_de_RAPPI_cuando_llega_un_PEDIDO_-_Sonidos_mp3cut.net.mp3" preload="auto"></audio>
   <audio id="audio2" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/eso-rony_mp3cut.net.mp3" preload="auto"></audio>
   <audio id="audio3" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/ssstik_mp3cut.net.mp3" preload="auto"></audio>
@@ -84,8 +75,8 @@
     const sheetRange = 'Pedidos';
     const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
     const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
-    let lastCount = 0;
 
+    let lastCount = 0;
     const sonidos = [
       document.getElementById('audio1'),
       document.getElementById('audio2'),
@@ -93,37 +84,17 @@
       document.getElementById('audio4')
     ];
 
-    // Activar sonido por política del navegador
-    document.getElementById('activarSonido').addEventListener('click', () => {
-      sonidos.forEach(audio => {
-        audio.play().then(() => {
-          audio.pause();
-          audio.currentTime = 0;
-        });
-      });
-      document.getElementById('activarSonido').style.display = 'none';
-    });
-
     function formatearMoneda(numero) {
-      return parseInt(numero).toLocaleString('es-CO'); // Ej: 149.800
+      return parseInt(numero).toLocaleString('es-CO');
     }
 
     function celebrarConSonidoYVoz(cliente, monto) {
-      // 🎉 Confeti
-      confetti({
-        particleCount: 200,
-        spread: 100,
-        origin: { y: 0.6 }
-      });
-
-      // 🔀 Elegir sonido aleatorio
+      confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
       const audio = sonidos[Math.floor(Math.random() * sonidos.length)];
       audio.currentTime = 0;
       audio.play();
-
-      // 🗣️ Voz después del sonido
       audio.onended = () => {
-        const mensaje = `¡Nuevo pedido de ${cliente} por ${formatearMoneda(monto)} pesos!`;
+        const mensaje = `Nuevo pedido de ${cliente} por ${formatearMoneda(monto)} pesos.`;
         const speech = new SpeechSynthesisUtterance(mensaje);
         speech.lang = 'es-CO';
         speech.rate = 1;
@@ -138,39 +109,81 @@
         const rows = data.values || [];
 
         const today = new Date().toISOString().split('T')[0];
-        let total = 0, countToday = 0, totalToday = 0;
+        let total = 0, countToday = 0, totalToday = 0, ticket = 0;
         let nuevoCliente = '', nuevoMonto = 0;
+        const pedidosDiarios = {};
 
         rows.slice(1).forEach((row, index) => {
           const [fecha, cliente, totalVenta] = row;
           total++;
+          if (!pedidosDiarios[fecha]) pedidosDiarios[fecha] = 0;
+          pedidosDiarios[fecha]++;
 
           if (fecha && fecha.startsWith(today)) {
             countToday++;
             totalToday += parseFloat(totalVenta);
           }
-
           if (index === rows.length - 2) {
             nuevoCliente = cliente;
             nuevoMonto = totalVenta;
           }
         });
 
-        const ticket = totalToday / (countToday || 1);
+        ticket = totalToday / (countToday || 1);
 
         document.getElementById('totalOrders').textContent = `${total} Pedidos`;
         document.getElementById('ventasHoy').textContent = `Ventas hoy: $${formatearMoneda(totalToday)}`;
         document.getElementById('ticketPromedio').textContent = `Ticket promedio: $${formatearMoneda(ticket)}`;
         document.getElementById('pedidosMes').textContent = `Pedidos del mes: ${total}`;
+        document.getElementById('pedidosHoy').textContent = `Pedidos de hoy: ${countToday}`;
 
         if (total > lastCount) {
           celebrarConSonidoYVoz(nuevoCliente, nuevoMonto);
           lastCount = total;
         }
 
+        updateCharts(pedidosDiarios);
+
       } catch (err) {
         console.error('Error al cargar datos:', err);
       }
+    }
+
+    function updateCharts(data) {
+      const labels = Object.keys(data).slice(-7);
+      const values = labels.map(fecha => data[fecha]);
+
+      new Chart(document.getElementById('graficaVentas').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Pedidos por día',
+            data: values,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)'
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+
+      // Proyección simple: duplicar la tendencia actual (mock)
+      const proyeccion = [...values, ...values.map(v => Math.round(v * 1.2))];
+      const labelsProy = [...labels, ...labels.map(d => d + '*')];
+
+      new Chart(document.getElementById('graficaProyeccion').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: labelsProy,
+          datasets: [{
+            label: 'Proyección de pedidos',
+            data: proyeccion,
+            fill: false,
+            borderColor: 'rgba(255,99,132,1)',
+            tension: 0.4
+          }]
+        },
+        options: { responsive: true }
+      });
     }
 
     setInterval(fetchData, 5000);
