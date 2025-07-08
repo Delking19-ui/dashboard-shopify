@@ -89,6 +89,8 @@
     const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
 
     let lastCount = 0;
+    let audioEnabled = false;
+
     const sonidos = [
       document.getElementById('audio1'),
       document.getElementById('audio2'),
@@ -97,7 +99,7 @@
     ];
 
     document.getElementById('enableAudio').addEventListener('click', () => {
-      sonidos.forEach(audio => audio.play().then(() => audio.pause()));
+      audioEnabled = true;
       alert('Audio activado correctamente ✅');
     });
 
@@ -106,6 +108,7 @@
     }
 
     function celebrarConSonidoYVoz(cliente, monto) {
+      if (!audioEnabled) return;
       confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
       const audio = sonidos[Math.floor(Math.random() * sonidos.length)];
       audio.currentTime = 0;
