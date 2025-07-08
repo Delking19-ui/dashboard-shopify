@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
+      background: #f4f5fa;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -43,9 +43,21 @@
       max-width: 800px;
       margin-bottom: 40px;
     }
+    #enableAudio {
+      padding: 10px 20px;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
+
+  <button id="enableAudio">🔊 Activar Audio</button>
 
   <div class="main-count" id="totalOrders">0 Pedidos</div>
   <div class="stats">
@@ -83,6 +95,11 @@
       document.getElementById('audio3'),
       document.getElementById('audio4')
     ];
+
+    document.getElementById('enableAudio').addEventListener('click', () => {
+      sonidos.forEach(audio => audio.play().then(() => audio.pause()));
+      alert('Audio activado correctamente ✅');
+    });
 
     function formatearMoneda(numero) {
       return parseInt(numero).toLocaleString('es-CO');
@@ -160,13 +177,17 @@
           datasets: [{
             label: 'Pedidos por día',
             data: values,
-            backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            backgroundColor: 'linear-gradient(to right, #6a11cb, #2575fc)',
+            borderColor: '#6a11cb'
           }]
         },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        options: {
+          responsive: true,
+          indexAxis: 'y',
+          plugins: { legend: { display: false } }
+        }
       });
 
-      // Proyección simple: duplicar la tendencia actual (mock)
       const proyeccion = [...values, ...values.map(v => Math.round(v * 1.2))];
       const labelsProy = [...labels, ...labels.map(d => d + '*')];
 
@@ -178,11 +199,14 @@
             label: 'Proyección de pedidos',
             data: proyeccion,
             fill: false,
-            borderColor: 'rgba(255,99,132,1)',
+            borderColor: '#7f00ff',
+            backgroundColor: '#e100ff',
             tension: 0.4
           }]
         },
-        options: { responsive: true }
+        options: {
+          responsive: true
+        }
       });
     }
 
