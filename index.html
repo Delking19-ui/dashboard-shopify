@@ -162,56 +162,11 @@
           lastCount = total;
         }
 
-        updateCharts(pedidosDiarios);
-
       } catch (err) {
         console.error('Error al cargar datos:', err);
       }
     }
 
-    function updateCharts(data) {
-      const labels = Object.keys(data).slice(-7);
-      const values = labels.map(fecha => data[fecha]);
-
-      new Chart(document.getElementById('graficaVentas').getContext('2d'), {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Pedidos por día',
-            data: values,
-            backgroundColor: 'linear-gradient(to right, #6a11cb, #2575fc)',
-            borderColor: '#6a11cb'
-          }]
-        },
-        options: {
-          responsive: true,
-          indexAxis: 'y',
-          plugins: { legend: { display: false } }
-        }
-      });
-
-      const proyeccion = [...values, ...values.map(v => Math.round(v * 1.2))];
-      const labelsProy = [...labels, ...labels.map(d => d + '*')];
-
-      new Chart(document.getElementById('graficaProyeccion').getContext('2d'), {
-        type: 'line',
-        data: {
-          labels: labelsProy,
-          datasets: [{
-            label: 'Proyección de pedidos',
-            data: proyeccion,
-            fill: false,
-            borderColor: '#7f00ff',
-            backgroundColor: '#e100ff',
-            tension: 0.4
-          }]
-        },
-        options: {
-          responsive: true
-        }
-      });
-    }
 
     setInterval(fetchData, 5000);
     fetchData();
