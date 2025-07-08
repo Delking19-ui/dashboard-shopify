@@ -71,8 +71,11 @@
   <!-- Confetti -->
   <canvas id="confetti" class="confetti"></canvas>
 
-  <!-- Sonido -->
-  <audio id="sound" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/Rappi_SONIDO_de_RAPPI_cuando_llega_un_PEDIDO_-_Sonidos_mp3cut.net.mp3" preload="auto"></audio>
+  <!-- Audios precargados -->
+  <audio id="audio1" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/Rappi_SONIDO_de_RAPPI_cuando_llega_un_PEDIDO_-_Sonidos_mp3cut.net.mp3" preload="auto"></audio>
+  <audio id="audio2" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/eso-rony_mp3cut.net.mp3" preload="auto"></audio>
+  <audio id="audio3" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/ssstik_mp3cut.net.mp3" preload="auto"></audio>
+  <audio id="audio4" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/ssstik_mp3cut.net_1.mp3" preload="auto"></audio>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -81,16 +84,24 @@
     const sheetRange = 'Pedidos';
     const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
     const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
-    const sound = document.getElementById('sound');
     let lastCount = 0;
 
-    // Activar sonido por política de navegador
+    const sonidos = [
+      document.getElementById('audio1'),
+      document.getElementById('audio2'),
+      document.getElementById('audio3'),
+      document.getElementById('audio4')
+    ];
+
+    // Activar sonido por política del navegador
     document.getElementById('activarSonido').addEventListener('click', () => {
-      sound.play().then(() => {
-        sound.pause();
-        sound.currentTime = 0;
-        document.getElementById('activarSonido').style.display = 'none';
+      sonidos.forEach(audio => {
+        audio.play().then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+        });
       });
+      document.getElementById('activarSonido').style.display = 'none';
     });
 
     function formatearMoneda(numero) {
@@ -98,19 +109,20 @@
     }
 
     function celebrarConSonidoYVoz(cliente, monto) {
-      // 🎊 Confeti
+      // 🎉 Confeti
       confetti({
         particleCount: 200,
         spread: 100,
         origin: { y: 0.6 }
       });
 
-      // 🔊 Sonido
-      sound.currentTime = 0;
-      sound.play();
+      // 🔀 Elegir sonido aleatorio
+      const audio = sonidos[Math.floor(Math.random() * sonidos.length)];
+      audio.currentTime = 0;
+      audio.play();
 
-      // 🗣️ Hablar después del sonido
-      sound.onended = () => {
+      // 🗣️ Voz después del sonido
+      audio.onended = () => {
         const mensaje = `¡Nuevo pedido de ${cliente} por ${formatearMoneda(monto)} pesos!`;
         const speech = new SpeechSynthesisUtterance(mensaje);
         speech.lang = 'es-CO';
@@ -138,7 +150,6 @@
             totalToday += parseFloat(totalVenta);
           }
 
-          // Último pedido
           if (index === rows.length - 2) {
             nuevoCliente = cliente;
             nuevoMonto = totalVenta;
