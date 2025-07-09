@@ -7,114 +7,59 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
-    * { box-sizing: border-box; }
-
+    * { box-sizing: border-box; margin:0; padding:0; }
     body {
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(to bottom, #192841, #1c2c4d);
-      color: white;
-      margin: 0;
-      padding: 20px;
+      color: white; padding:20px;
     }
-
-    h1 {
-      margin-bottom: 10px;
-    }
-
+    h1 { margin-bottom:10px; text-align:center; }
     .dashboard {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+      gap:20px;
     }
-
     .card {
-      background: #23395b;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      background:#23395b;
+      border-radius:12px;
+      padding:20px;
+      box-shadow:0 0 10px rgba(0,0,0,0.2);
     }
-
-    .card h3 {
-      margin-top: 0;
-      color: #88a91e;
-      font-size: 1.3rem;
-    }
-
-    canvas {
-      width: 100% !important;
-      height: auto !important;
-    }
-
-    .metrics {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
+    .card h3 { margin-top:0; color:#88a91e; font-size:1.3rem; text-align:center; }
+    canvas { width:100%!important; height:auto!important; }
+    .metrics { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
     .metric {
-      flex: 1 1 100px;
-      background: #2d456b;
-      padding: 10px;
-      border-radius: 8px;
-      text-align: center;
+      flex:1 1 100px;
+      background:#2d456b;
+      padding:10px;
+      border-radius:8px;
+      text-align:center;
     }
-
-    .metric-value {
-      font-size: 1.5rem;
-      color: #88a91e;
-    }
-
+    .metric-value { font-size:1.5rem; color:#88a91e; }
     #enableAudio {
-      padding: 10px 20px;
-      background: linear-gradient(to right, #6a11cb, #2575fc);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-bottom: 20px;
+      padding:10px 20px;
+      background:linear-gradient(to right,#6a11cb,#2575fc);
+      color:white; border:none; border-radius:8px;
+      font-size:1rem; cursor:pointer;
+      display:block; margin:10px auto;
     }
-
-    /* 🔽 ESTILOS RESPONSIVOS PARA MÓVIL */
-    @media (max-width: 768px) {
-      .dashboard {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 20px;
-      }
-
-      .card {
-        width: 100% !important;
-      }
-
-      .card h3 {
-        font-size: 1.5rem;
-        text-align: center;
-      }
-
-      .metric-value {
-        font-size: 1.8rem;
-      }
-
-      .metric div:last-child {
-        font-size: 1rem;
-      }
-
-      #enableAudio {
-        width: 100%;
-        font-size: 1.2rem;
-      }
-
-      h1 {
-        font-size: 1.8rem;
-        text-align: center;
-      }
-
-      canvas {
-        max-width: 100% !important;
-        height: auto !important;
-      }
+    #personajeContenedor {
+      position:fixed; bottom:20px; right:20px;
+      width:120px; text-align:center; z-index:9999;
+    }
+    #personaje { width:100px; animation:bob 3s ease-in-out infinite; }
+    #nube {
+      position:absolute; top:-60px; right:0;
+      background:rgba(255,255,255,0.9);
+      color:#222; padding:8px 12px;
+      border-radius:12px; font-size:0.85rem;
+      animation:fadeInOut 5s infinite;
+    }
+    @keyframes bob { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+    @keyframes fadeInOut { 0%,100% {opacity:1;} 45%,55% {opacity:0.3;} }
+    @media(max-width:768px){
+      .dashboard { grid-template-columns:1fr; }
+      #personajeContenedor { bottom:10px; right:10px; }
     }
   </style>
 </head>
@@ -133,11 +78,18 @@
       <div class="metric"><div class="metric-value" id="pedidosHoy">0</div><div>Pedidos Hoy</div></div>
     </div>
   </div>
-
   <div class="card"><h3>Pedidos por Día</h3><canvas id="graficaPedidos"></canvas></div>
   <div class="card"><h3>Proyección</h3><canvas id="graficaProyeccion"></canvas></div>
   <div class="card"><h3>Top Clientes</h3><canvas id="graficaClientes"></canvas></div>
   <div class="card"><h3>Top Productos</h3><canvas id="graficaProductos"></canvas></div>
+  <div class="card"><h3>Clientes Nuevos vs Recurrentes</h3><canvas id="graficaNuevosVsRecurrentes"></canvas></div>
+  <div class="card"><h3>Productos de Baja Rotación</h3><canvas id="graficaBajaRotacion"></canvas></div>
+</div>
+
+<!-- Personaje animado -->
+<div id="personajeContenedor">
+  <div id="nube">Esperando pedido...</div>
+  <img id="personaje" src="https://i.imgur.com/UQ5yX5L.png" alt="Personaje">
 </div>
 
 <!-- Audios -->
@@ -147,177 +99,159 @@
 <audio id="audio4" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/ssstik_mp3cut.net_1.mp3" preload="auto"></audio>
 
 <script>
-  const sheetId = '1hgdNPwXGJijXfv8FlE4RUNCGl-fkoJ-qheCxfZ7pEjM';
-  const sheetRange = 'Pedidos';
-  const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
-  const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
+const sheetId = '1hgdNPwXGJijXfv8FlE4RUNCGl-fkoJ-qheCxfZ7pEjM';
+const sheetRange = 'Pedidos';
+const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
+const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
 
-  let lastCount = -1; // Forzar actualización al cargar
-  let audioEnabled = false;
+let lastCount = -1, audioEnabled = false, lastOrderTime = Date.now();
 
-  const sonidos = [
-    document.getElementById('audio1'),
-    document.getElementById('audio2'),
-    document.getElementById('audio3'),
-    document.getElementById('audio4')
-  ];
+const sonidos = [
+  document.getElementById('audio1'),
+  document.getElementById('audio2'),
+  document.getElementById('audio3'),
+  document.getElementById('audio4')
+];
 
-  document.getElementById('enableAudio').addEventListener('click', () => {
-    audioEnabled = !audioEnabled;
-    document.getElementById('enableAudio').textContent = audioEnabled ? '✅ Sonido Activado' : '🔊 Activar Audio';
-  });
+document.getElementById('enableAudio').onclick = () => {
+  audioEnabled = !audioEnabled;
+  document.getElementById('enableAudio').textContent = audioEnabled ? '✅ Sonido Activado' : '🔊 Activar Audio';
+};
 
-  function formatearMoneda(numero) {
-    return parseInt(numero).toLocaleString('es-CO');
-  }
+  const updateCharacter = () => {
+    const nube = document.getElementById('nube');
+    const personaje = document.getElementById('personaje');
+    const elapsed = (Date.now() - lastOrderTime) / 1000;
 
-function celebrarConSonidoYVoz(cliente, monto) {
+    if (elapsed < 1) {
+      personaje.src = 'https://media.tenor.com/Frr96mV2EVAAAAAM/futurama-philip-j-fry.gif'; // feliz
+      nube.textContent = '¡Pedido recibido!';
+    } else if (elapsed < 20) {
+      personaje.src = 'https://c.tenor.com/QwtWEi13MtAAAAAd/tenor.gif'; // normal
+      nube.textContent = 'Esperando pedido...';
+    } else if (elapsed < 40) {
+      personaje.src = 'https://media.tenor.com/ApxBu1krFnIAAAAM/shaking-twitch.gif'; // con café
+      nube.textContent = 'Uy, me voy por un café...';
+    } else {
+      personaje.src = 'https://media.tenor.com/ZGbjiPpgQfcAAAAM/sleeping-fry.gif'; // dormido
+      nube.textContent = 'Ya casi me duermo…';
+    }
+  };
+setInterval(updateCharacter, 1000);
+
+const formatearMoneda = n => parseInt(n).toLocaleString('es-CO');
+
+const celebrarPedido = (cliente, monto) => {
   if (!audioEnabled) return;
-
-  confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
-
-  // Elegir sonido aleatorio nuevo
-  const audio = sonidos[Math.floor(Math.random() * sonidos.length)];
-
-  // Asegurarse de reiniciar y reproducir
-  audio.pause(); // detener si estaba sonando
-  audio.currentTime = 0;
-
-  // Forzar reproducción segura con promesa
+  confetti({ particleCount:200, spread:100, origin:{y:0.6} });
+  const audio = sonidos[Math.floor(Math.random()*sonidos.length)];
+  audio.pause(); audio.currentTime=0;
   audio.play().then(() => {
-    audio.onended = () => {
-      const mensaje = `Nuevo pedido de ${cliente} por ${formatearMoneda(monto)} pesos.`;
-      const speech = new SpeechSynthesisUtterance(mensaje);
-      speech.lang = 'es-CO';
-      speech.rate = 1;
-      window.speechSynthesis.speak(speech);
-    };
-  }).catch((err) => {
-    console.warn("Error reproduciendo sonido:", err);
+    const msg = new SpeechSynthesisUtterance(`Nuevo pedido de ${cliente} por ${formatearMoneda(monto)} pesos.`);
+    msg.lang='es-CO'; window.speechSynthesis.speak(msg);
   });
+  lastOrderTime = Date.now();
+};
+
+const destroyChart = id => {
+  const old = document.getElementById(id);
+  const nc = old.cloneNode();
+  old.parentNode.replaceChild(nc, old);
+  return nc.getContext('2d');
+};
+
+async function fetchData(){
+  try {
+    const res = await fetch(sheetUrl);
+    const rows = (await res.json()).values?.slice(1) || [];
+
+    const today = new Date().toISOString().split('T')[0];
+    let total=0, totalToday=0, countToday=0, nuevoCliente='', nuevoMonto=0;
+    const pedidosDiarios={}, clientes={}, productos={}, nuevos={}, recurrentes={}, bajaRotacion={};
+
+    rows.forEach((r,i)=>{
+      if(r.length<7) return;
+      const [fecha, cliente,,,, totalVenta, producto] = r;
+      const monto = parseFloat(totalVenta.replace(/[^\d.]/g,''))||0;
+      if(!fecha||!cliente||!monto) return;
+      total++;
+      pedidosDiarios[fecha] = (pedidosDiarios[fecha]||0)+1;
+      clientes[cliente] = (clientes[cliente]||0)+monto;
+      producto.split(',').forEach(p=>{
+        const it = p.trim();
+        if(it) productos[it]=(productos[it]||0)+1;
+      });
+      if(fecha.startsWith(today)){
+        totalToday += monto;
+        countToday++;
+      }
+      // nuevos vs recurrentes
+      if(!nuevos[cliente] && recurrentes[cliente]===undefined){
+        nuevos[cliente] = 1;
+      } else {
+        recurrentes[cliente] = (recurrentes[cliente]||0)+1;
+      }
+      // baja rotación: menos de 2 vendidos
+      producto.split(',').forEach(p=>{
+        const it=p.trim();
+        if(it) bajaRotacion[it]=(bajaRotacion[it]||0)+1;
+      });
+      if(i === rows.length-2){
+        nuevoCliente = cliente;
+        nuevoMonto = monto;
+      }
+    });
+    const ticket = totalToday/(countToday||1);
+    document.getElementById('totalPedidos').textContent = total;
+    document.getElementById('ventasHoy').textContent = '$'+formatearMoneda(totalToday);
+    document.getElementById('ticketPromedio').textContent = '$'+formatearMoneda(ticket);
+    document.getElementById('pedidosHoy').textContent = countToday;
+    if(total > lastCount){
+      celebrarPedido(nuevoCliente, nuevoMonto);
+      lastCount = total;
+    }
+
+    new Chart(destroyChart('graficaPedidos'), {
+      type:'bar',
+      data:{labels:Object.keys(pedidosDiarios), datasets:[{label:'Pedidos/día', data:Object.values(pedidosDiarios), backgroundColor:'#88a91e'}]},
+      options:{scales:{y:{beginAtZero:true}}}
+    });
+    new Chart(destroyChart('graficaProyeccion'), {
+      type:'line',
+      data:{labels:Object.keys(pedidosDiarios), datasets:[{label:'Proyección', data:Object.values(pedidosDiarios).map(v=>v*ticket), fill:true, borderColor:'#34d399', backgroundColor:'rgba(52,211,153,0.2)'}]},
+      options:{scales:{y:{beginAtZero:true}}}
+    });
+    new Chart(destroyChart('graficaClientes'), {
+      type:'bar',
+      data:{labels:Object.keys(clientes), datasets:[{label:'Clientes', data:Object.values(clientes), backgroundColor:'rgba(131,88,255,0.8)'}]},
+      options:{indexAxis:'y', scales:{x:{beginAtZero:true}}}
+    });
+    new Chart(destroyChart('graficaProductos'), {
+      type:'bar',
+      data:{labels:Object.keys(productos), datasets:[{label:'Productos', data:Object.values(productos), backgroundColor:'rgba(0,200,255,0.6)'}]},
+      options:{indexAxis:'y', scales:{x:{beginAtZero:true}}}
+    });
+    // nuevos vs recurrentes
+    new Chart(destroyChart('graficaNuevosVsRecurrentes'), {
+      type:'pie',
+      data:{
+        labels:['Nuevos','Recurrentes'],
+        datasets:[{data:[Object.keys(nuevos).length, Object.keys(recurrentes).length], backgroundColor:['#4ade80','#16a34a']}]
+      }
+    });
+    // baja rotación (menos de 2)
+    const baja = Object.entries(bajaRotacion).filter(([k,v])=>v<2).reduce((a,[k,v])=>(a.labels.push(k), a.data.push(v),a),{labels:[],data:[]});
+    new Chart(destroyChart('graficaBajaRotacion'), {
+      type:'bar',
+      data:{labels:baja.labels, datasets:[{label:'Ventas bajas',data:baja.data, backgroundColor:'#f87171'}]},
+      options:{indexAxis:'y', scales:{x:{beginAtZero:true}}}
+    });
+
+  } catch(err){console.error('Error datos:',err);}
 }
 
-
-  async function fetchData() {
-    try {
-      const res = await fetch(sheetUrl);
-      const data = await res.json();
-      const rows = data.values || [];
-
-      const today = new Date().toISOString().split('T')[0];
-      let total = 0, countToday = 0, totalToday = 0, ticket = 0;
-      let nuevoCliente = '', nuevoMonto = 0;
-      const pedidosDiarios = {}, clientes = {}, productos = {};
-
-      rows.slice(1).forEach((row, index) => {
-        if (row.length < 7) return; // Evita errores con filas incompletas
-        let [fecha, cliente, , , , totalVenta, producto] = row;
-
-        // Validar y limpiar valores
-        const totalClean = parseFloat(totalVenta.replace(/[^0-9.]/g, '') || 0);
-        if (!fecha || !cliente || isNaN(totalClean)) return;
-
-        total++;
-
-        pedidosDiarios[fecha] = (pedidosDiarios[fecha] || 0) + 1;
-        clientes[cliente] = (clientes[cliente] || 0) + totalClean;
-
-        producto.split(',').forEach(p => {
-          const clean = p.trim();
-          if (clean) productos[clean] = (productos[clean] || 0) + 1;
-        });
-
-        if (fecha.startsWith(today)) {
-          countToday++;
-          totalToday += totalClean;
-        }
-
-        if (index === rows.length - 2) {
-          nuevoCliente = cliente;
-          nuevoMonto = totalClean;
-        }
-      });
-
-      ticket = totalToday / (countToday || 1);
-
-      document.getElementById('totalPedidos').textContent = total;
-      document.getElementById('ventasHoy').textContent = '$' + formatearMoneda(totalToday);
-      document.getElementById('ticketPromedio').textContent = '$' + formatearMoneda(ticket);
-      document.getElementById('pedidosHoy').textContent = countToday;
-
-      if (total > lastCount) {
-        celebrarConSonidoYVoz(nuevoCliente, nuevoMonto);
-        lastCount = total;
-      }
-
-      const destroyChart = id => {
-        const oldCanvas = document.getElementById(id);
-        const newCanvas = oldCanvas.cloneNode();
-        oldCanvas.parentNode.replaceChild(newCanvas, oldCanvas);
-        return newCanvas.getContext('2d');
-      };
-
-      new Chart(destroyChart('graficaPedidos'), {
-        type: 'bar',
-        data: {
-          labels: Object.keys(pedidosDiarios),
-          datasets: [{
-            label: 'Pedidos por día',
-            data: Object.values(pedidosDiarios),
-            backgroundColor: '#88a91e'
-          }]
-        },
-        options: { scales: { y: { beginAtZero: true } } }
-      });
-
-      new Chart(destroyChart('graficaProyeccion'), {
-        type: 'line',
-        data: {
-          labels: Object.keys(pedidosDiarios),
-          datasets: [{
-            label: 'Proyección de Ventas',
-            data: Object.values(pedidosDiarios).map(v => v * ticket),
-            fill: true,
-            borderColor: '#34d399',
-            backgroundColor: 'rgba(52, 211, 153, 0.2)'
-          }]
-        },
-        options: { scales: { y: { beginAtZero: true } } }
-      });
-
-      new Chart(destroyChart('graficaClientes'), {
-        type: 'bar',
-        data: {
-          labels: Object.keys(clientes),
-          datasets: [{
-            label: 'Ventas por Cliente',
-            data: Object.values(clientes),
-            backgroundColor: 'rgba(131, 88, 255, 0.8)'
-          }]
-        },
-        options: { indexAxis: 'y', scales: { x: { beginAtZero: true } } }
-      });
-
-      new Chart(destroyChart('graficaProductos'), {
-        type: 'bar',
-        data: {
-          labels: Object.keys(productos),
-          datasets: [{
-            label: 'Productos Vendidos',
-            data: Object.values(productos),
-            backgroundColor: 'rgba(0, 200, 255, 0.6)'
-          }]
-        },
-        options: { indexAxis: 'y', scales: { x: { beginAtZero: true } } }
-      });
-
-    } catch (err) {
-      console.error('Error al cargar datos:', err);
-    }
-  }
-
-  setInterval(fetchData, 5000);
-  fetchData();
+setInterval(fetchData,5000);
+fetchData();
 </script>
 </body>
 </html>
