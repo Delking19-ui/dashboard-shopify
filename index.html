@@ -171,12 +171,20 @@
     return parseInt(numero).toLocaleString('es-CO');
   }
 
-  function celebrarConSonidoYVoz(cliente, monto) {
-    if (!audioEnabled) return;
-    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
-    const audio = sonidos[Math.floor(Math.random() * sonidos.length)];
-    audio.currentTime = 0;
-    audio.play();
+function celebrarConSonidoYVoz(cliente, monto) {
+  if (!audioEnabled) return;
+
+  confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+
+  // Elegir sonido aleatorio nuevo
+  const audio = sonidos[Math.floor(Math.random() * sonidos.length)];
+
+  // Asegurarse de reiniciar y reproducir
+  audio.pause(); // detener si estaba sonando
+  audio.currentTime = 0;
+
+  // Forzar reproducción segura con promesa
+  audio.play().then(() => {
     audio.onended = () => {
       const mensaje = `Nuevo pedido de ${cliente} por ${formatearMoneda(monto)} pesos.`;
       const speech = new SpeechSynthesisUtterance(mensaje);
@@ -184,7 +192,11 @@
       speech.rate = 1;
       window.speechSynthesis.speak(speech);
     };
-  }
+  }).catch((err) => {
+    console.warn("Error reproduciendo sonido:", err);
+  });
+}
+
 
   async function fetchData() {
     try {
