@@ -3,110 +3,120 @@
 <head>
   <meta charset="UTF-8">
   <title>Dashboard de Ventas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<style>
-  * { box-sizing: border-box; }
+  <style>
+    * { box-sizing: border-box; }
 
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(to bottom, #192841, #1c2c4d);
-    color: white;
-    margin: 0;
-    padding: 20px;
-  }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #192841, #1c2c4d);
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
 
-  .dashboard {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
+    h1 {
+      margin-bottom: 10px;
+    }
 
-  .card {
-    background: #23395b;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-  }
-
-  .card h3 {
-    margin-top: 0;
-    color: #88a91e;
-    font-size: 1.3rem;
-  }
-
-  canvas {
-    width: 100% !important;
-    height: auto !important;
-  }
-
-  .metrics {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .metric {
-    flex: 1 1 100px;
-    background: #2d456b;
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-  }
-
-  .metric-value {
-    font-size: 1.5rem;
-    color: #88a91e;
-  }
-
-  #enableAudio {
-    padding: 10px 20px;
-    background: linear-gradient(to right, #6a11cb, #2575fc);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    margin-bottom: 20px;
-  }
-
-  /* 🔽 ESTILOS RESPONSIVOS PARA MÓVIL */
-  @media (max-width: 768px) {
     .dashboard {
-      grid-template-columns: 1fr;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: #23395b;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
 
     .card h3 {
-      font-size: 1.5rem;
+      margin-top: 0;
+      color: #88a91e;
+      font-size: 1.3rem;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    .metrics {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .metric {
+      flex: 1 1 100px;
+      background: #2d456b;
+      padding: 10px;
+      border-radius: 8px;
       text-align: center;
     }
 
     .metric-value {
-      font-size: 1.8rem;
-    }
-
-    .metric div:last-child {
-      font-size: 1rem;
+      font-size: 1.5rem;
+      color: #88a91e;
     }
 
     #enableAudio {
-      width: 100%;
-      font-size: 1.2rem;
+      padding: 10px 20px;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-bottom: 20px;
     }
 
-    h1 {
-      font-size: 1.8rem;
-      text-align: center;
-    }
+    /* 🔽 ESTILOS RESPONSIVOS PARA MÓVIL */
+    @media (max-width: 768px) {
+      .dashboard {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 20px;
+      }
 
-    canvas {
-      max-width: 100% !important;
-      height: auto !important;
-    }
-  }
-</style>
+      .card {
+        width: 100% !important;
+      }
 
+      .card h3 {
+        font-size: 1.5rem;
+        text-align: center;
+      }
+
+      .metric-value {
+        font-size: 1.8rem;
+      }
+
+      .metric div:last-child {
+        font-size: 1rem;
+      }
+
+      #enableAudio {
+        width: 100%;
+        font-size: 1.2rem;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+        text-align: center;
+      }
+
+      canvas {
+        max-width: 100% !important;
+        height: auto !important;
+      }
+    }
+  </style>
 </head>
 <body>
 
