@@ -2,46 +2,47 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Panel de Ventas</title>
+  <title>Dashboard de Ventas</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
+    * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f4f5fa;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 20px;
+      background: linear-gradient(to bottom, #192841, #1c2c4d);
+      color: white;
       margin: 0;
+      padding: 20px;
     }
-    .main-count {
-      font-size: 4rem;
-      font-weight: bold;
-      margin-bottom: 20px;
-      color: #333;
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
     }
-    .stats {
+    .card {
+      background: #23395b;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    .card h3 { margin-top: 0; color: #88a91e; }
+    canvas { width: 100% !important; height: auto !important; }
+    .metrics {
       display: flex;
+      justify-content: space-between;
       flex-wrap: wrap;
-      justify-content: center;
-      gap: 30px;
-      font-size: 1.2rem;
-      color: #555;
-      margin-bottom: 30px;
+      gap: 10px;
     }
-    .confetti {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 1000;
+    .metric {
+      flex: 1 1 100px;
+      background: #2d456b;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
     }
-    canvas.chart {
-      max-width: 800px;
-      margin-bottom: 40px;
+    .metric-value {
+      font-size: 1.5rem;
+      color: #88a91e;
     }
     #enableAudio {
       padding: 10px 20px;
@@ -57,119 +58,192 @@
 </head>
 <body>
 
-  <button id="enableAudio">🔊 Activar Audio</button>
+<h1>📊 Dashboard de Ventas</h1>
+<button id="enableAudio">🔊 Activar Audio</button>
 
-  <div class="main-count" id="totalOrders">0 Pedidos</div>
-  <div class="stats">
-    <div id="ventasHoy">Ventas hoy: $0</div>
-    <div id="ticketPromedio">Ticket promedio: $0</div>
-    <div id="pedidosMes">Pedidos del mes: 0</div>
-    <div id="pedidosHoy">Pedidos de hoy: 0</div>
+<div class="dashboard">
+  <div class="card">
+    <h3>Resumen de Pedidos</h3>
+    <div class="metrics">
+      <div class="metric"><div class="metric-value" id="totalPedidos">0</div><div>Total Pedidos</div></div>
+      <div class="metric"><div class="metric-value" id="ventasHoy">$0</div><div>Ventas Hoy</div></div>
+      <div class="metric"><div class="metric-value" id="ticketPromedio">$0</div><div>Ticket Promedio</div></div>
+      <div class="metric"><div class="metric-value" id="pedidosHoy">0</div><div>Pedidos Hoy</div></div>
+    </div>
   </div>
 
-  <!-- Confetti -->
-  <canvas id="confetti" class="confetti"></canvas>
+  <div class="card"><h3>Pedidos por Día</h3><canvas id="graficaPedidos"></canvas></div>
+  <div class="card"><h3>Proyección</h3><canvas id="graficaProyeccion"></canvas></div>
+  <div class="card"><h3>Top Clientes</h3><canvas id="graficaClientes"></canvas></div>
+  <div class="card"><h3>Top Productos</h3><canvas id="graficaProductos"></canvas></div>
+</div>
 
-  <!-- Graficas -->
-  <canvas id="graficaVentas" class="chart"></canvas>
-  <canvas id="graficaProyeccion" class="chart"></canvas>
+<!-- Audios -->
+<audio id="audio1" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/Rappi_SONIDO_de_RAPPI_cuando_llega_un_PEDIDO_-_Sonidos_mp3cut.net.mp3" preload="auto"></audio>
+<audio id="audio2" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/eso-rony_mp3cut.net.mp3" preload="auto"></audio>
+<audio id="audio3" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/ssstik_mp3cut.net.mp3" preload="auto"></audio>
+<audio id="audio4" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/ssstik_mp3cut.net_1.mp3" preload="auto"></audio>
 
-  <!-- Audios -->
-  <audio id="audio1" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/Rappi_SONIDO_de_RAPPI_cuando_llega_un_PEDIDO_-_Sonidos_mp3cut.net.mp3" preload="auto"></audio>
-  <audio id="audio2" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/eso-rony_mp3cut.net.mp3" preload="auto"></audio>
-  <audio id="audio3" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/ssstik_mp3cut.net.mp3" preload="auto"></audio>
-  <audio id="audio4" src="https://cdn.shopify.com/s/files/1/0945/7555/8941/files/ssstik_mp3cut.net_1.mp3" preload="auto"></audio>
+<script>
+  const sheetId = '1hgdNPwXGJijXfv8FlE4RUNCGl-fkoJ-qheCxfZ7pEjM';
+  const sheetRange = 'Pedidos';
+  const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
+  const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
 
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  let lastCount = -1; // Forzar actualización al cargar
+  let audioEnabled = false;
 
-  <script>
-    const sheetId = '1hgdNPwXGJijXfv8FlE4RUNCGl-fkoJ-qheCxfZ7pEjM';
-    const sheetRange = 'Pedidos';
-    const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
-    const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
+  const sonidos = [
+    document.getElementById('audio1'),
+    document.getElementById('audio2'),
+    document.getElementById('audio3'),
+    document.getElementById('audio4')
+  ];
 
-    let lastCount = 0;
-    let audioEnabled = false;
+  document.getElementById('enableAudio').addEventListener('click', () => {
+    audioEnabled = !audioEnabled;
+    document.getElementById('enableAudio').textContent = audioEnabled ? '✅ Sonido Activado' : '🔊 Activar Audio';
+  });
 
-    const sonidos = [
-      document.getElementById('audio1'),
-      document.getElementById('audio2'),
-      document.getElementById('audio3'),
-      document.getElementById('audio4')
-    ];
+  function formatearMoneda(numero) {
+    return parseInt(numero).toLocaleString('es-CO');
+  }
 
-    document.getElementById('enableAudio').addEventListener('click', () => {
-      audioEnabled = true;
-      alert('Audio activado correctamente ✅');
-    });
+  function celebrarConSonidoYVoz(cliente, monto) {
+    if (!audioEnabled) return;
+    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+    const audio = sonidos[Math.floor(Math.random() * sonidos.length)];
+    audio.currentTime = 0;
+    audio.play();
+    audio.onended = () => {
+      const mensaje = `Nuevo pedido de ${cliente} por ${formatearMoneda(monto)} pesos.`;
+      const speech = new SpeechSynthesisUtterance(mensaje);
+      speech.lang = 'es-CO';
+      speech.rate = 1;
+      window.speechSynthesis.speak(speech);
+    };
+  }
 
-    function formatearMoneda(numero) {
-      return parseInt(numero).toLocaleString('es-CO');
-    }
+  async function fetchData() {
+    try {
+      const res = await fetch(sheetUrl);
+      const data = await res.json();
+      const rows = data.values || [];
 
-    function celebrarConSonidoYVoz(cliente, monto) {
-      if (!audioEnabled) return;
-      confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
-      const audio = sonidos[Math.floor(Math.random() * sonidos.length)];
-      audio.currentTime = 0;
-      audio.play();
-      audio.onended = () => {
-        const mensaje = `Nuevo pedido de ${cliente} por ${formatearMoneda(monto)} pesos.`;
-        const speech = new SpeechSynthesisUtterance(mensaje);
-        speech.lang = 'es-CO';
-        speech.rate = 1;
-        window.speechSynthesis.speak(speech);
-      };
-    }
+      const today = new Date().toISOString().split('T')[0];
+      let total = 0, countToday = 0, totalToday = 0, ticket = 0;
+      let nuevoCliente = '', nuevoMonto = 0;
+      const pedidosDiarios = {}, clientes = {}, productos = {};
 
-    async function fetchData() {
-      try {
-        const res = await fetch(sheetUrl);
-        const data = await res.json();
-        const rows = data.values || [];
+      rows.slice(1).forEach((row, index) => {
+        if (row.length < 7) return; // Evita errores con filas incompletas
+        let [fecha, cliente, , , , totalVenta, producto] = row;
 
-        const today = new Date().toISOString().split('T')[0];
-        let total = 0, countToday = 0, totalToday = 0, ticket = 0;
-        let nuevoCliente = '', nuevoMonto = 0;
-        const pedidosDiarios = {};
+        // Validar y limpiar valores
+        const totalClean = parseFloat(totalVenta.replace(/[^0-9.]/g, '') || 0);
+        if (!fecha || !cliente || isNaN(totalClean)) return;
 
-        rows.slice(1).forEach((row, index) => {
-          const [fecha, cliente, totalVenta] = row;
-          total++;
-          if (!pedidosDiarios[fecha]) pedidosDiarios[fecha] = 0;
-          pedidosDiarios[fecha]++;
+        total++;
 
-          if (fecha && fecha.startsWith(today)) {
-            countToday++;
-            totalToday += parseFloat(totalVenta);
-          }
-          if (index === rows.length - 2) {
-            nuevoCliente = cliente;
-            nuevoMonto = totalVenta;
-          }
+        pedidosDiarios[fecha] = (pedidosDiarios[fecha] || 0) + 1;
+        clientes[cliente] = (clientes[cliente] || 0) + totalClean;
+
+        producto.split(',').forEach(p => {
+          const clean = p.trim();
+          if (clean) productos[clean] = (productos[clean] || 0) + 1;
         });
 
-        ticket = totalToday / (countToday || 1);
-
-        document.getElementById('totalOrders').textContent = `${total} Pedidos`;
-        document.getElementById('ventasHoy').textContent = `Ventas hoy: $${formatearMoneda(totalToday)}`;
-        document.getElementById('ticketPromedio').textContent = `Ticket promedio: $${formatearMoneda(ticket)}`;
-        document.getElementById('pedidosMes').textContent = `Pedidos del mes: ${total}`;
-        document.getElementById('pedidosHoy').textContent = `Pedidos de hoy: ${countToday}`;
-
-        if (total > lastCount) {
-          celebrarConSonidoYVoz(nuevoCliente, nuevoMonto);
-          lastCount = total;
+        if (fecha.startsWith(today)) {
+          countToday++;
+          totalToday += totalClean;
         }
 
-      } catch (err) {
-        console.error('Error al cargar datos:', err);
+        if (index === rows.length - 2) {
+          nuevoCliente = cliente;
+          nuevoMonto = totalClean;
+        }
+      });
+
+      ticket = totalToday / (countToday || 1);
+
+      document.getElementById('totalPedidos').textContent = total;
+      document.getElementById('ventasHoy').textContent = '$' + formatearMoneda(totalToday);
+      document.getElementById('ticketPromedio').textContent = '$' + formatearMoneda(ticket);
+      document.getElementById('pedidosHoy').textContent = countToday;
+
+      if (total > lastCount) {
+        celebrarConSonidoYVoz(nuevoCliente, nuevoMonto);
+        lastCount = total;
       }
+
+      const destroyChart = id => {
+        const oldCanvas = document.getElementById(id);
+        const newCanvas = oldCanvas.cloneNode();
+        oldCanvas.parentNode.replaceChild(newCanvas, oldCanvas);
+        return newCanvas.getContext('2d');
+      };
+
+      new Chart(destroyChart('graficaPedidos'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(pedidosDiarios),
+          datasets: [{
+            label: 'Pedidos por día',
+            data: Object.values(pedidosDiarios),
+            backgroundColor: '#88a91e'
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+
+      new Chart(destroyChart('graficaProyeccion'), {
+        type: 'line',
+        data: {
+          labels: Object.keys(pedidosDiarios),
+          datasets: [{
+            label: 'Proyección de Ventas',
+            data: Object.values(pedidosDiarios).map(v => v * ticket),
+            fill: true,
+            borderColor: '#34d399',
+            backgroundColor: 'rgba(52, 211, 153, 0.2)'
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+
+      new Chart(destroyChart('graficaClientes'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(clientes),
+          datasets: [{
+            label: 'Ventas por Cliente',
+            data: Object.values(clientes),
+            backgroundColor: 'rgba(131, 88, 255, 0.8)'
+          }]
+        },
+        options: { indexAxis: 'y', scales: { x: { beginAtZero: true } } }
+      });
+
+      new Chart(destroyChart('graficaProductos'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(productos),
+          datasets: [{
+            label: 'Productos Vendidos',
+            data: Object.values(productos),
+            backgroundColor: 'rgba(0, 200, 255, 0.6)'
+          }]
+        },
+        options: { indexAxis: 'y', scales: { x: { beginAtZero: true } } }
+      });
+
+    } catch (err) {
+      console.error('Error al cargar datos:', err);
     }
+  }
 
-
-    setInterval(fetchData, 5000);
-    fetchData();
-  </script>
+  setInterval(fetchData, 5000);
+  fetchData();
+</script>
 </body>
 </html>
