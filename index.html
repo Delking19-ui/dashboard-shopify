@@ -198,6 +198,24 @@ async function fetchData(){
     const rows = (await res.json()).values?.slice(1) || [];
 
     const today = new Date().toISOString().split('T')[0];
+
+rows.forEach((r,i)=>{
+  if(r.length<7) return;
+  const [fechaRaw, cliente,,,, totalVenta, producto] = r;
+  const fecha = (fechaRaw || '').trim().split(' ')[0]; // ← Asegura que solo uses la parte "YYYY-MM-DD"
+  const monto = parseFloat(totalVenta.replace(/[^\d.]/g,''))||0;
+
+  if(!fecha||!cliente||!monto) return;
+
+  total++;
+  pedidosDiarios[fecha] = (pedidosDiarios[fecha]||0)+1;
+  ...
+  if(fecha === today){
+    totalToday += monto;
+    countToday++;
+  }
+});
+
     let total=0, totalToday=0, countToday=0, nuevoCliente='', nuevoMonto=0;
     const pedidosDiarios={}, clientes={}, productos={}, nuevos={}, recurrentes={}, bajaRotacion={};
 
