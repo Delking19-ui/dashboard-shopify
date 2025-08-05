@@ -134,7 +134,7 @@
 const sheetId = '1hgdNPwXGJijXfv8FlE4RUNCGl-fkoJ-qheCxfZ7pEjM';
 const sheetRange = 'Pedidos';
 const apiKey = 'AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto';
-const sheetUrl = https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey};
+const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetRange}?key=${apiKey}`;
 
 let lastCount = -1, audioEnabled = false, lastOrderTime = Date.now();
 
@@ -179,7 +179,7 @@ const celebrarPedido = (cliente, monto) => {
   const audio = sonidos[Math.floor(Math.random()*sonidos.length)];
   audio.pause(); audio.currentTime=0;
   audio.play().then(() => {
-    const msg = new SpeechSynthesisUtterance(Nuevo pedido de ${cliente} por ${formatearMoneda(monto)} pesos.);
+    const msg = new SpeechSynthesisUtterance(`Nuevo pedido de ${cliente} por ${formatearMoneda(monto)} pesos.`);
     msg.lang='es-CO'; window.speechSynthesis.speak(msg);
   });
   lastOrderTime = Date.now();
@@ -293,7 +293,7 @@ fetchData();
 // ID y rango de la hoja de campañas
 const sheetCampañasId = '12onwt2yOZMlBSKIWHz4wR2NK5oqWiWtzyrMIhJt3L9k';
 const sheetCampañasRange = 'FacebookAds';
-const sheetCampañasUrl = https://sheets.googleapis.com/v4/spreadsheets/${sheetCampañasId}/values/${sheetCampañasRange}?key=${apiKey};
+const sheetCampañasUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetCampañasId}/values/${sheetCampañasRange}?key=${apiKey}`;
 
 function formatearCO(valor) {
   const num = parseFloat(valor.toString().replace(/[^\d.-]/g, ''));
@@ -595,7 +595,7 @@ if (frecuencia < 1.5 && ctr > 4.5 && cpa < 8000) {
 
 
   return recomendaciones.length
-    ? recomendaciones.map(r => <li>${r}</li>).join('')
+    ? recomendaciones.map(r => `<li>${r}</li>`).join('')
     : '<li>✅ Rendimiento saludable</li>';
 }
 
@@ -624,15 +624,15 @@ async function fetchCampañasActivas() {
       const card = document.createElement('div');
       card.className = 'card';
       card.style.gridColumn = '1 / -1';
-      card.innerHTML = 
+      card.innerHTML = `
         <h3>${valores[0].valor}</h3>
         <div class="metrics">
-          ${valores.slice(2).map(v => 
+          ${valores.slice(2).map(v => `
             <div class="metric">
               <div class="metric-value">${['CPC','CPM','Gasto','Costo por compra','Valor de compras','Costo por inicio de pago','Costo por landing page'].includes(v.campo) ? formatearCO(v.valor) : v.valor}</div>
               <div>${v.campo}</div>
             </div>
-          ).join('')}
+          `).join('')}
         </div>
         <div style="background:#2b3c59; margin-top:15px; padding:12px; border-radius:8px;">
           <strong style="color:#88a91e;">Recomendaciones:</strong>
@@ -640,7 +640,7 @@ async function fetchCampañasActivas() {
             ${recomendaciones}
           </ul>
         </div>
-      ;
+      `;
       contenedor.appendChild(card);
     });
 
@@ -651,7 +651,97 @@ async function fetchCampañasActivas() {
 
 fetchCampañasActivas();
 setInterval(fetchCampañasActivas, 180000);
+function analizarPedidos() {
+  const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pedidos");
+  const data = hoja.getDataRange().getValues();
+  const encabezados = data[0];
+  const rows = data.slice(1); // omitir encabezado
+
+  const today = new Date().toISOString().split('T')[0];
+
+  // Índices según encabezado
+  const idxFecha = encabezados.indexOf("Fecha");
+  const idxCliente = encabezados.indexOf("Nombre cliente");
+  const idxTotal = encabezados.indexOf("Total");
+  const idxProductos = encabezados.indexOf("Productos");
+
+  // Variables
+  let total = 0;
+  let totalToday = 0;
+  let countToday = 0;
+  let nuevoCliente = '';
+  let nuevoMonto = 0;
+
+  const pedidosDiarios = {};
+  const clientes = {};
+  const productos = {};
+  const nuevos = {};
+  const recurrentes = {};
+  const bajaRotacion = {};
+
+  rows.forEach((r, i) => {
+    const fecha = r[idxFecha];
+    const cliente = r[idxCliente];
+    const montoTexto = r[idxTotal];
+    const productosTexto = r[idxProductos];
+
+    if (!fecha || !cliente || !montoTexto) return;
+
+    const fechaISO = new Date(fecha).toISOString().split('T')[0];
+    const monto = parseFloat(String(montoTexto).replace(/[^\d.]/g, '')) || 0;
+
+    total++;
+    pedidosDiarios[fechaISO] = (pedidosDiarios[fechaISO] || 0) + 1;
+    clientes[cliente] = (clientes[cliente] || 0) + monto;
+
+    if (productosTexto) {
+      productosTexto.split(',').forEach(p => {
+        const item = p.trim();
+        if (item) {
+          productos[item] = (productos[item] || 0) + 1;
+          bajaRotacion[item] = (bajaRotacion[item] || 0) + 1;
+        }
+      });
+    }
+
+    if (fechaISO === today) {
+      totalToday += monto;
+      countToday++;
+    }
+
+    if (!nuevos[cliente] && recurrentes[cliente] === undefined) {
+      nuevos[cliente] = 1;
+    } else {
+      recurrentes[cliente] = (recurrentes[cliente] || 0) + 1;
+    }
+
+    // Última compra (penúltima fila)
+    if (i === rows.length - 2) {
+      nuevoCliente = cliente;
+      nuevoMonto = monto;
+    }
+  });
+
+  Logger.log("Total pedidos: " + total);
+  Logger.log("Total hoy: " + totalToday);
+  Logger.log("Pedidos hoy: " + countToday);
+  Logger.log("Último cliente: " + nuevoCliente + " - $" + nuevoMonto);
+  Logger.log("Clientes nuevos: " + Object.keys(nuevos).length);
+  Logger.log("Clientes recurrentes: " + Object.keys(recurrentes).length);
+  Logger.log("Productos vendidos: ");
+  Logger.log(productos);
+}
+
 </script>
+
+<iframe
+  src="https://d845d0a8350f141333.gradio.live"
+  width="100%"
+  height="600"
+  style="border:none; border-radius: 12px;"
+  allow="clipboard-write; microphone"
+  title="IA Asistente de Campañas"
+></iframe>
 
 </body>
 </html>
