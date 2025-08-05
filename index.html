@@ -198,6 +198,9 @@ async function fetchData(){
     const rows = (await res.json()).values?.slice(1) || [];
 
     const today = new Date().toISOString().split('T')[0];
+    let total=0, totalToday=0, countToday=0, nuevoCliente='', nuevoMonto=0;
+    const pedidosDiarios={}, clientes={}, productos={}, nuevos={}, recurrentes={}, bajaRotacion={};
+
 
 rows.forEach((r,i)=>{
   if(r.length<7) return;
@@ -215,26 +218,6 @@ rows.forEach((r,i)=>{
     countToday++;
   }
 });
-
-    let total=0, totalToday=0, countToday=0, nuevoCliente='', nuevoMonto=0;
-    const pedidosDiarios={}, clientes={}, productos={}, nuevos={}, recurrentes={}, bajaRotacion={};
-
-    rows.forEach((r,i)=>{
-      if(r.length<7) return;
-      const [fecha, cliente,,,, totalVenta, producto] = r;
-      const monto = parseFloat(totalVenta.replace(/[^\d.]/g,''))||0;
-      if(!fecha||!cliente||!monto) return;
-      total++;
-      pedidosDiarios[fecha] = (pedidosDiarios[fecha]||0)+1;
-      clientes[cliente] = (clientes[cliente]||0)+monto;
-      producto.split(',').forEach(p=>{
-        const it = p.trim();
-        if(it) productos[it]=(productos[it]||0)+1;
-      });
-      if(fecha.startsWith(today)){
-        totalToday += monto;
-        countToday++;
-      }
       // nuevos vs recurrentes
       if(!nuevos[cliente] && recurrentes[cliente]===undefined){
         nuevos[cliente] = 1;
