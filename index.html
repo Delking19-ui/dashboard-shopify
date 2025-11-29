@@ -562,12 +562,6 @@
         grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.9fr);
         grid-auto-rows: auto;
       }
-      .col-span-1-l {
-        grid-column: span 1;
-      }
-      .col-span-2-l {
-        grid-column: 1 / -1;
-      }
     }
 
     @media (max-width: 900px) {
@@ -827,7 +821,7 @@
   </div>
 </div>
 
-<!-- ================= SCRIPT PORTAL VENEZUELA (GRÁFICAS / LÓGICA) ================= -->
+<!-- ========== SCRIPT ORIGINAL (CONFIG HOJA TAL CUAL ME LO ENVIASTE) ========== -->
 <script>
   const COUNTRY_FILTER = "VE";
   const CURRENCY = "VES";
@@ -922,20 +916,47 @@
 
         if (row.length >= 14) {
           // Formato NUEVO (con columna País junto al total)
+          // [0] fecha
+          // [1] cliente
+          // [2] email
+          // [3] teléfono
+          // [4] dirección
+          // [5] total
+          // [6] país
+          // [7] productos
+          // [8] cantidades
+          // [9] skus
+          // [10] método pago
+          // [11] estado financiero
+          // [12] estado de cumplimiento
+          // [13] número orden
           fechaCell      = row[0] || "";
           cliente        = row[1] || "Desconocido";
           email          = row[2] || "";
           telefono       = row[3] || "";
           direccion      = row[4] || "";
           totalCell      = row[5] || "0";
-          // const pais    = row[6] || "";
+          // const pais    = row[6] || ""; // opcional si lo quieres usar luego
           productosCell  = row[7] || "";
           cantidadesCell = row[8] || "";
           skusCell       = row[9] || "";
           metodoPago     = row[10] || "";
           numeroOrden    = row[13] || row[12] || "";
         } else {
-          // Formato VIEJO
+          // Formato VIEJO (como el ejemplo que me enviaste)
+          // [0] fecha
+          // [1] cliente
+          // [2] email
+          // [3] teléfono
+          // [4] dirección (ej: "Ejemopl, Maracaibo, Venezuela")
+          // [5] total
+          // [6] productos
+          // [7] cantidades
+          // [8] skus
+          // [9] método pago
+          // [10] estado financiero
+          // [11] estado cumplimiento
+          // [12] número de orden (#1001)
           fechaCell      = row[0] || "";
           cliente        = row[1] || "Desconocido";
           email          = row[2] || "";
@@ -965,6 +986,7 @@
         // ---- CIUDAD (sacada de la dirección) ----
         let city = "Sin ciudad";
         if (direccion) {
+          // Intento : "Calle algo, Maracaibo, Venezuela" → "Maracaibo"
           const parts = String(direccion).split(",");
           if (parts.length >= 2) {
             city = parts[1].trim();
@@ -1547,7 +1569,7 @@
     alertsList.innerHTML = "";
 
     const alerts = [];
-    const uniqueCustomers = agg.customerOrders.size;
+       const uniqueCustomers = agg.customerOrders.size;
     const repeatRate = uniqueCustomers
       ? Math.round((agg.returningCustomers / Math.max(1, uniqueCustomers)) * 100)
       : 0;
