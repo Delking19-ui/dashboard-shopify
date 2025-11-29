@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Portal Venezuela · Mytems · Dashboard</title>
+  <title>Portal Mytems · Dashboard Pedidos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Chart.js -->
@@ -603,16 +603,16 @@
   <!-- HEADER -->
   <header class="dash-header">
     <div class="brand-block">
-      <div class="brand-logo">VE</div>
+      <div class="brand-logo">MY</div>
       <div class="brand-text-stack">
-        <div class="brand-text-main">Portal Venezuela</div>
-        <div class="brand-text-sub">Pedidos Mytems · Shopify + TikTok / Meta</div>
+        <div class="brand-text-main">Portal Mytems</div>
+        <div class="brand-text-sub">Dashboard de pedidos · Shopify + Ads</div>
       </div>
     </div>
 
     <div class="dash-title-block">
-      <h1 class="dash-title">Dashboard de pedidos Venezuela</h1>
-      <p class="dash-subtitle">Análisis por rango de fechas, segmentos y proyección en VES</p>
+      <h1 class="dash-title">Dashboard de pedidos Mytems</h1>
+      <p class="dash-subtitle">Análisis por rango de fechas, segmentos y proyección en COP</p>
       <p id="metaInfo" class="meta-info">Cargando datos...</p>
     </div>
   </header>
@@ -653,7 +653,9 @@
     <!-- KPIs PRINCIPALES -->
     <section class="card full-row">
       <div class="card-inner">
-        <h2 class="card-title">Resumen general <span class="badge">Venezuela · VES</span></h2>
+        <h2 class="card-title">
+          Resumen general <span class="badge">Mytems · COP</span>
+        </h2>
         <div class="kpi-grid">
           <div class="kpi">
             <div class="kpi-label">Pedidos</div>
@@ -661,7 +663,7 @@
             <div id="kpiOrdersPerDay" class="kpi-sub">0 pedidos / día</div>
           </div>
           <div class="kpi">
-            <div class="kpi-label">Ingresos (VES)</div>
+            <div class="kpi-label">Ingresos (COP)</div>
             <div id="kpiRevenue" class="kpi-value">0</div>
             <div class="kpi-sub">Rango seleccionado</div>
           </div>
@@ -730,7 +732,7 @@
                 <tr>
                   <th>Cliente</th>
                   <th>Pedidos</th>
-                  <th>Total VES</th>
+                  <th>Total COP</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -743,7 +745,7 @@
                 <tr>
                   <th>Producto</th>
                   <th>Unidades</th>
-                  <th>Total VES</th>
+                  <th>Total COP</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -821,21 +823,18 @@
   </div>
 </div>
 
-<!-- ========== SCRIPT ORIGINAL (CONFIG HOJA TAL CUAL ME LO ENVIASTE) ========== -->
+<!-- ========== SCRIPT (MISMOS COLORES Y GRÁFICAS, SIN VENEZUELA / VES) ========== -->
 <script>
-  const COUNTRY_FILTER = "VE";
-  const CURRENCY = "VES";
+  const CURRENCY = "COP";
 
-  // 🔁 TASA DE CONVERSIÓN COP → VES (ajusta este valor según la tasa actual)
-  const COP_TO_VES = 0.00085;
-
-  // 🔗 CONFIG SHEETS
+  // 🔗 CONFIG SHEETS (SE MANTIENEN TAL CUAL)
   const SHEET_ID = "1hgdNPwXGJijXfv8FlE4RUNCGl-fkoJ-qheCxfZ7pEjM";
   const SHEET_RANGE = "Pedidos";
   const API_KEY = "AIzaSyB3df7vOH8RMvrhzbfmxLq61o51Eve9tto";
   const SHEET_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_RANGE)}?key=${API_KEY}`;
 
-  const HIGH_TICKET_THRESHOLD = 60;
+  // Umbral ticket alto (en COP)
+  const HIGH_TICKET_THRESHOLD = 60000;
 
   const timeframeButtons = document.querySelectorAll(".timeframe-chip");
   const segmentButtons = document.querySelectorAll(".segment-chip");
@@ -883,13 +882,6 @@
     return isNaN(num) ? 0 : num;
   }
 
-  // 🔍 Detectar si la FILA corresponde a Venezuela (cualquier celda contiene "venezuela")
-  function rowIsVenezuela(row) {
-    if (!Array.isArray(row)) return false;
-    const text = row.join(" ").toLowerCase();
-    return text.includes("venezuela");
-  }
-
   // ========= CARGA DATOS DESDE GOOGLE SHEETS =========
   async function loadDataFromSheet() {
     try {
@@ -907,12 +899,9 @@
       for (const row of dataRows) {
         if (!row || row.length < 6) continue;
 
-        // 🔴 Solo filas donde en ALGUNA columna aparezca "Venezuela"
-        if (!rowIsVenezuela(row)) continue;
-
-        // ---- Mapeo flexible de columnas ----
+        // Mapeo flexible de columnas (mantenemos estructura que ya usabas)
         let fechaCell, cliente, email, telefono, direccion, totalCell,
-            productosCell, cantidadesCell, skusCell, metodoPago, numeroOrden;
+            productosCell, cantidadesCell, skusCell, metodoPago, numeroOrden, paisCell;
 
         if (row.length >= 14) {
           // Formato NUEVO (con columna País junto al total)
@@ -936,19 +925,19 @@
           telefono       = row[3] || "";
           direccion      = row[4] || "";
           totalCell      = row[5] || "0";
-          // const pais    = row[6] || ""; // opcional si lo quieres usar luego
+          paisCell       = row[6] || "";
           productosCell  = row[7] || "";
           cantidadesCell = row[8] || "";
           skusCell       = row[9] || "";
           metodoPago     = row[10] || "";
           numeroOrden    = row[13] || row[12] || "";
         } else {
-          // Formato VIEJO (como el ejemplo que me enviaste)
+          // Formato VIEJO
           // [0] fecha
           // [1] cliente
           // [2] email
           // [3] teléfono
-          // [4] dirección (ej: "Ejemopl, Maracaibo, Venezuela")
+          // [4] dirección
           // [5] total
           // [6] productos
           // [7] cantidades
@@ -968,6 +957,7 @@
           skusCell       = row[8] || "";
           metodoPago     = row[9] || "";
           numeroOrden    = row[12] || "";
+          paisCell       = "";
         }
 
         // ---- FECHA ----
@@ -979,14 +969,12 @@
           }
         }
 
-        // ---- TOTAL (COP → VES) ----
-        const totalCop = parseNumber(totalCell);
-        const total = totalCop * COP_TO_VES;
+        // ---- TOTAL (COP directo) ----
+        const total = parseNumber(totalCell);
 
         // ---- CIUDAD (sacada de la dirección) ----
         let city = "Sin ciudad";
         if (direccion) {
-          // Intento : "Calle algo, Maracaibo, Venezuela" → "Maracaibo"
           const parts = String(direccion).split(",");
           if (parts.length >= 2) {
             city = parts[1].trim();
@@ -1017,8 +1005,7 @@
         });
 
         const totalQty = quantities.reduce((s, q) => s + q, 0) || names.length || 1;
-        const unitValueCop = totalQty > 0 ? (totalCop / totalQty) : totalCop;
-        const unitValue = unitValueCop * COP_TO_VES;
+        const unitValue = totalQty > 0 ? (total / totalQty) : total;
 
         const products = names.map((title, i) => {
           const qty = quantities[i] || 1;
@@ -1037,21 +1024,21 @@
         orders.push({
           orderId: numeroOrden || dateStr + "-" + Math.random().toString(36).slice(2),
           date: dateStr || new Date().toISOString().slice(0, 10),
-          country: COUNTRY_FILTER,
           total,
           currency: CURRENCY,
           customerId,
           customerName: cliente,
           products,
           city,
-          paymentMethod: metodoPago || "Desconocido"
+          paymentMethod: metodoPago || "Desconocido",
+          country: paisCell || ""
         });
       }
 
-      console.log("Pedidos VE detectados:", orders.length);
+      console.log("Pedidos detectados:", orders.length);
 
       if (orders.length === 0) {
-        metaInfoEl.textContent = "No hay pedidos con 'Venezuela' en la hoja (Pedidos).";
+        metaInfoEl.textContent = "No hay pedidos en la hoja (Pedidos).";
       }
 
       return orders;
@@ -1067,11 +1054,11 @@
     const out = [];
     const today = new Date();
     const productCatalog = [
-      { id: "cap001", title: "Gorra plana Venezuela Classic" },
-      { id: "cap002", title: "Gorra visera curva Mytems Caracas" },
-      { id: "cap003", title: "Gorra negra minimal Mytems" },
-      { id: "cap004", title: "Gorra bicolor VINOTINTO" },
-      { id: "cap005", title: "Gorra trucker bandera VE" },
+      { id: "cap001", title: "Gorra plana Classic" },
+      { id: "cap002", title: "Gorra visera curva Mytems" },
+      { id: "cap003", title: "Gorra negra minimal" },
+      { id: "cap004", title: "Gorra bicolor edición limitada" },
+      { id: "cap005", title: "Gorra trucker bandera" },
     ];
     const customers = [
       { id: "c1", name: "Juan Pérez" },
@@ -1082,14 +1069,14 @@
       { id: "c6", name: "Invitado TikTok" },
     ];
     const cities = [
-      "Caracas",
-      "Maracaibo",
-      "Valencia",
-      "Barquisimeto",
-      "Maracay",
-      "Ciudad Guayana",
-      "Maturín",
-      "San Cristóbal"
+      "Bogotá",
+      "Medellín",
+      "Cali",
+      "Barranquilla",
+      "Bucaramanga",
+      "Cartagena",
+      "Cúcuta",
+      "Pereira"
     ];
 
     for (let i = 0; i < 90; i++) {
@@ -1105,7 +1092,7 @@
         for (let k = 0; k < productsCount; k++) {
           const prod = productCatalog[Math.floor(Math.random() * productCatalog.length)];
           const qty = 1 + Math.floor(Math.random() * 2);
-          const price = 15 + Math.floor(Math.random() * 20);
+          const price = 30000 + Math.floor(Math.random() * 30000);
           total += qty * price;
           products.push({
             productId: prod.id,
@@ -1119,20 +1106,20 @@
         const r = Math.random();
         let paymentMethod;
         if (r < 0.6) paymentMethod = "Contra entrega";
-        else if (r < 0.9) paymentMethod = "Pago móvil";
-        else paymentMethod = "Tarjeta en línea";
+        else if (r < 0.9) paymentMethod = "Nequi / Daviplata";
+        else paymentMethod = "Tarjeta";
 
         out.push({
           orderId: "ORD-" + (i * 10 + j),
           date: d.toISOString().slice(0, 10),
-          country: COUNTRY_FILTER,
           total,
           currency: CURRENCY,
           customerId: customer.id,
           customerName: customer.name,
           products,
           city,
-          paymentMethod
+          paymentMethod,
+          country: "CO"
         });
       }
     }
@@ -1143,10 +1130,10 @@
   // ========= AGREGACIONES =========
   function aggregateData(orders, timeframe) {
     const { start, end } = getRangeForTimeframe(timeframe);
-    const allVeOrders = orders.filter(o => o.country === COUNTRY_FILTER);
+    const allOrders = orders;
 
     const firstDateByCustomer = new Map();
-    for (const o of allVeOrders) {
+    for (const o of allOrders) {
       const d = new Date(o.date + "T00:00:00");
       const prev = firstDateByCustomer.get(o.customerId);
       if (!prev || d < prev) {
@@ -1154,7 +1141,7 @@
       }
     }
 
-    const filteredBySegment = allVeOrders.filter(o => {
+    const filteredBySegment = allOrders.filter(o => {
       const d = new Date(o.date + "T00:00:00");
       const first = firstDateByCustomer.get(o.customerId);
       const isNew = first && (+first === +d);
@@ -1322,7 +1309,7 @@
     if (projectionChart) projectionChart.destroy();
 
     const revPerDay = agg.projection.revenuePerDay || 0;
-    const formatter = new Intl.NumberFormat("es-VE", {
+    const formatter = new Intl.NumberFormat("es-CO", {
       style: "currency",
       currency: CURRENCY,
       maximumFractionDigits: 0
@@ -1405,7 +1392,8 @@
             ticks: {
               color: "#9ca3af",
               font: { size: 10 },
-              callback: value => value >= 1000 ? (value/1000)+"k" : value
+              callback: value => value >= 1000000 ? (value/1000000)+"M" :
+                                 value >= 1000 ? (value/1000)+"k" : value
             }
           }
         },
@@ -1422,7 +1410,7 @@
   }
 
   function buildLocationsChart(ctx, agg) {
-    const formatter = new Intl.NumberFormat("es-VE", {
+    const formatter = new Intl.NumberFormat("es-CO", {
       style: "currency",
       currency: CURRENCY,
       maximumFractionDigits: 0
@@ -1460,7 +1448,8 @@
             ticks: {
               color: "#9ca3af",
               font: { size: 10 },
-              callback: value => value >= 1000 ? (value/1000)+"k" : value
+              callback: value => value >= 1000000 ? (value/1000000)+"M" :
+                                 value >= 1000 ? (value/1000)+"k" : value
             }
           },
           y: {
@@ -1496,7 +1485,7 @@
   }
 
   function buildPaymentsChart(ctx, agg) {
-    const formatter = new Intl.NumberFormat("es-VE", {
+    const formatter = new Intl.NumberFormat("es-CO", {
       style: "currency",
       currency: CURRENCY,
       maximumFractionDigits: 0
@@ -1569,13 +1558,13 @@
     alertsList.innerHTML = "";
 
     const alerts = [];
-       const uniqueCustomers = agg.customerOrders.size;
+    const uniqueCustomers = agg.customerOrders.size;
     const repeatRate = uniqueCustomers
       ? Math.round((agg.returningCustomers / Math.max(1, uniqueCustomers)) * 100)
       : 0;
     const aov = agg.totalOrders ? agg.totalRevenue / agg.totalOrders : 0;
 
-    const formatter = new Intl.NumberFormat("es-VE", {
+    const formatter = new Intl.NumberFormat("es-CO", {
       style: "currency",
       currency: CURRENCY,
       maximumFractionDigits: 0
@@ -1584,7 +1573,7 @@
     if (agg.totalOrders === 0) {
       alerts.push({
         type: "warning",
-        text: "No hay pedidos en este rango para Venezuela. Revisa campañas o rango de fechas."
+        text: "No hay pedidos en este rango. Revisa campañas o rango de fechas."
       });
     } else {
       if (agg.newCustomers > agg.returningCustomers) {
@@ -1662,7 +1651,7 @@
     const agg = aggregateData(orders, timeframe);
     CURRENT_AGG = agg;
 
-    const formatter = new Intl.NumberFormat("es-VE", {
+    const formatter = new Intl.NumberFormat("es-CO", {
       style: "currency",
       currency: CURRENCY,
       maximumFractionDigits: 0
@@ -1769,7 +1758,7 @@
     }[timeframe] || "últimos 30 días";
 
     metaInfoEl.textContent =
-      `Rango: ${tfLabel} · ${agg.days} días · Segmento: ${segmentLabel(currentSegment)} · Actualizado ${now.toLocaleString("es-VE")}`;
+      `Rango: ${tfLabel} · ${agg.days} días · Segmento: ${segmentLabel(currentSegment)} · Actualizado ${now.toLocaleString("es-CO")}`;
   }
 
   function openCustomerDetail(customerId) {
@@ -1783,7 +1772,7 @@
     const firstDateEl = document.getElementById("cdFirstDate");
     const listEl = document.getElementById("cdOrdersList");
 
-    const formatter = new Intl.NumberFormat("es-VE", {
+    const formatter = new Intl.NumberFormat("es-CO", {
       style: "currency",
       currency: CURRENCY,
       maximumFractionDigits: 0
@@ -1806,7 +1795,7 @@
     const aov = customerAgg.orders ? customerAgg.total / customerAgg.orders : 0;
     aovEl.textContent = formatter.format(aov);
     firstDateEl.textContent = firstDateGlobal
-      ? firstDateGlobal.toLocaleDateString("es-VE")
+      ? firstDateGlobal.toLocaleDateString("es-CO")
       : "—";
 
     listEl.innerHTML = "";
