@@ -997,12 +997,56 @@
     return { start, end: now };
   }
 
-  function parseNumber(value) {
-    if (value == null) return 0;
-    const str = String(value).replace(/[^\d,.-]/g, "").replace(",", ".");
-    const num = parseFloat(str);
-    return isNaN(num) ? 0 : num;
+function parseNumber(value) {
+  if (value == null) return 0;
+  let str = String(value).trim();
+
+  // Dejamos solo dígitos, coma, punto y signo -
+  str = str.replace(/[^0-9,.\-]/g, "");
+
+  const hasComma = str.includes(",");
+  const hasDot   = str.includes(".");
+
+  if (hasComma && hasDot) {
+    // Hay coma y punto -> detectamos estilo
+    const firstComma = str.indexOf(",");
+    const firstDot   = str.indexOf(".");
+
+    if (firstDot < firstComma) {
+      // Estilo español/latam: 1.234,56  → '.' miles, ',' decimales
+      str = str.replace(/\./g, "").replace(",", ".");
+    } else {
+      // Estilo inglés: 1,234.56 → ',' miles, '.' decimales
+      str = str.replace(/,/g, "");
+    }
+  } else if (hasComma && !hasDot) {
+    // Solo coma: puede ser 1.234,56 o 1,234
+    const lastComma   = str.lastIndexOf(",");
+    const decimalsLen = str.length - lastComma - 1;
+
+    if (decimalsLen === 2) {
+      // 1.234,56 → coma como decimal
+      str = str.replace(",", ".");
+    } else {
+      // 1,234 → coma como miles
+      str = str.replace(/,/g, "");
+    }
+  } else if (hasDot && !hasComma) {
+    // Solo punto: puede ser 234.000 o 234.56
+    const lastDot     = str.lastIndexOf(".");
+    const decimalsLen = str.length - lastDot - 1;
+
+    if (decimalsLen === 3) {
+      // 234.000 → punto como miles (3 dígitos después)
+      str = str.replace(/\./g, "");
+    }
+    // Si NO son 3 dígitos, asumimos estilo 1234.56 y lo dejamos igual
   }
+
+  const num = parseFloat(str);
+  return isNaN(num) ? 0 : num;
+}
+
 
   // ========= CARGA DATOS DESDE GOOGLE SHEETS (PEDIDOS, SIN REPETIDOS) =========
   async function loadDataFromSheet() {
