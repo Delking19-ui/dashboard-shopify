@@ -36,13 +36,16 @@
         radial-gradient(circle at top left, #111827 0, #020617 45%, #000000 100%);
       color: var(--text-main);
       min-height: 100vh;
+      width: 100%;
+      overflow-x: hidden;
     }
 
     /* ============ LAYOUT GENERAL ============ */
 
     .dashboard-wrapper {
-      max-width: 1320px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
       padding: 20px 16px 80px;
       display: flex;
       flex-direction: column;
@@ -56,6 +59,7 @@
       grid-template-columns: minmax(0, 1.5fr) minmax(0, 2fr) auto;
       gap: 16px;
       align-items: center;
+      width: 100%;
     }
 
     .brand-block {
@@ -172,6 +176,7 @@
       grid-template-columns: minmax(0, 2fr) minmax(0, 2fr);
       gap: 18px;
       align-items: flex-start;
+      width: 100%;
     }
 
     .dashboard-grid .full-row {
@@ -188,6 +193,7 @@
       box-shadow: var(--shadow-card);
       position: relative;
       overflow: hidden;
+      width: 100%;
     }
 
     .card::before {
@@ -235,6 +241,7 @@
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
+      width: 100%;
     }
 
     .metric {
@@ -245,6 +252,7 @@
       text-align: left;
       position: relative;
       overflow: hidden;
+      width: 100%;
     }
 
     .metric::after {
@@ -276,21 +284,21 @@
       text-overflow: ellipsis;
     }
 
-    /* ============ GRAFICAS ============ */
+    /* ============ GRÁFICAS ============ */
 
     canvas {
       width: 100% !important;
-      height: auto !important;
+      height: 100% !important;
     }
 
     .chart-wrapper {
       position: relative;
       width: 100%;
-      height: 220px;
+      height: min(320px, 40vh);
     }
 
     .chart-wrapper.sm {
-      height: 200px;
+      height: min(260px, 32vh);
     }
 
     /* ============ SECCIÓN CAMPAÑAS ============ */
@@ -309,6 +317,7 @@
 
     .campaigns-section {
       margin-top: 8px;
+      width: 100%;
     }
 
     .campaigns-grid {
@@ -316,6 +325,7 @@
       flex-direction: column;
       gap: 14px;
       margin-top: 10px;
+      width: 100%;
     }
 
     #campañasActivas .card {
@@ -324,6 +334,7 @@
       border: 1px solid var(--border-subtle);
       box-shadow: var(--shadow-card);
       color: var(--text-main);
+      width: 100%;
     }
 
     #campañasActivas .card h3 {
@@ -339,6 +350,7 @@
       grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
       gap: 10px;
       margin-top: 8px;
+      width: 100%;
     }
 
     #campañasActivas .metric {
@@ -365,6 +377,7 @@
 
     .assistant-section {
       margin-top: 12px;
+      width: 100%;
     }
 
     .assistant-frame-wrapper {
@@ -373,6 +386,7 @@
       border: 1px solid var(--border-subtle);
       overflow: hidden;
       box-shadow: var(--shadow-card);
+      width: 100%;
     }
 
     .assistant-frame-wrapper iframe {
@@ -477,10 +491,10 @@
         grid-template-columns: repeat(2, minmax(0,1fr));
       }
       .chart-wrapper {
-        height: 200px;
+        height: 260px;
       }
       .chart-wrapper.sm {
-        height: 190px;
+        height: 220px;
       }
       #personajeContenedor {
         right: 10px;
@@ -631,7 +645,7 @@
   </section>
 </div>
 
-<!-- PERSONAJE ANIMADO (SIN GORRA 3D, SOLO PERSONAJE) -->
+<!-- PERSONAJE ANIMADO -->
 <div id="personajeContenedor">
   <div id="personajeContenedor-inner">
     <div id="nube">Esperando pedido...</div>
@@ -799,6 +813,8 @@ async function fetchData(){
         }]
       },
       options:{
+        responsive: true,
+        maintainAspectRatio: false,
         plugins:{
           legend:{display:false}
         },
@@ -816,7 +832,7 @@ async function fetchData(){
       }
     });
 
-    // === GRAFICA: PROYECCIÓN (simple) ===
+    // === GRAFICA: PROYECCIÓN ===
     new Chart(destroyChart('graficaProyeccion'), {
       type:'line',
       data:{
@@ -833,6 +849,8 @@ async function fetchData(){
         }]
       },
       options:{
+        responsive: true,
+        maintainAspectRatio: false,
         plugins:{legend:{display:false}},
         scales:{
           x:{
@@ -860,6 +878,8 @@ async function fetchData(){
         }]
       },
       options:{
+        responsive: true,
+        maintainAspectRatio: false,
         indexAxis:'y',
         plugins:{legend:{display:false}},
         scales:{
@@ -888,6 +908,8 @@ async function fetchData(){
         }]
       },
       options:{
+        responsive: true,
+        maintainAspectRatio: false,
         indexAxis:'y',
         plugins:{legend:{display:false}},
         scales:{
@@ -915,6 +937,8 @@ async function fetchData(){
         }]
       },
       options:{
+        responsive: true,
+        maintainAspectRatio: false,
         plugins:{
           legend:{
             labels:{color:'#e5e7eb', font:{size:11}}
@@ -941,6 +965,8 @@ async function fetchData(){
         }]
       },
       options:{
+        responsive: true,
+        maintainAspectRatio: false,
         indexAxis:'y',
         plugins:{legend:{display:false}},
         scales:{
@@ -977,9 +1003,6 @@ function formatearCO(valor) {
   return '$' + num.toLocaleString('es-CO');
 }
 
-/*  ======= TODA TU LÓGICA DE RECOMENDACIONES SE MANTIENE IGUAL ======= */
-/* (No toco la parte de condiciones porque ya la tenías calibrada)      */
-
 function generarRecomendaciones(valores) {
   const get = campo => parseFloat((valores.find(v => v.campo === campo)?.valor || '0').toString().replace(',', '.')) || 0;
 
@@ -998,9 +1021,6 @@ function generarRecomendaciones(valores) {
   const valor_de_compras = get('Valor de compras');
 
   const recomendaciones = [];
-
-  /* AQUÍ VA TODO TU BLOQUE LARGO DE CONDICIONES
-     (Lo dejo exactamente igual que lo tenías) */
 
   if (cpa > 20000 && compras === 0) recomendaciones.push("🚨 CPA muy alto y sin compras. Diagnóstico: mala conversión. ⚙️ Considera pausar o lanzar una nueva campaña con otro público.");
   if (cpa > 15000 && ctr < 1 && frecuencia > 3) recomendaciones.push("📉 CPA sobre el límite, CTR bajo y frecuencia alta. ⚙️ Rediseña creativos y prueba públicos fríos.");
@@ -1022,11 +1042,208 @@ function generarRecomendaciones(valores) {
   if (compras > 10 && cpa < 13000 && cpc < 1200) recomendaciones.push("📈 Compras saludables, CPA y CPC bajo. 🚀 Escala agresivamente si presupuesto lo permite.");
   if (compras === 0 && ctr < 0.7 && gasto > 30000) recomendaciones.push("📉 CTR muy bajo sin resultados. ⚙️ Detén anuncio y rediseña creatividades.");
   if (roas > 3 && frecuencia < 2.5 && cpa < 12000) recomendaciones.push("🚀 ROAS alto, frecuencia controlada y CPA excelente. Escalamiento recomendado.");
+  if (compras > 20 && roas > 2.5 && frecuencia < 3) recomendaciones.push("📈 Compras altas, ROAS excelente y frecuencia estable. 🚀 Escala progresivamente con +20% presupuesto.");
+  if (frecuencia > 4 && ctr < 1) recomendaciones.push("📉 Frecuencia alta con bajo CTR. ⚙️ Anuncio quemado. Cambia diseño o mensaje urgente.");
+  if (cpc < 1000 && cpa < 15000 && compras > 5) recomendaciones.push("📈 Buen CPC y CPA, con compras constantes. 📈 Escala gradualmente y monitorea ROAS.");
+  if (impresiones > 5000 && compras === 0) recomendaciones.push("🔍 Buenas impresiones sin resultados. ⚙️ Verifica el mensaje, posible desconexión con el público.");
+  if (gasto > 80000 && cpa > 20000 && compras < 3) recomendaciones.push("🚨 Mucho gasto con resultados pobres. ⚙️ Detén o relanza campaña con nuevo enfoque.");
+  if (alcance > 5000 && frecuencia > 5 && cpa > 20000) recomendaciones.push("📉 Saturación de audiencia. ⚙️ Cambia a público fresco o expande segmentación.");
+  if (inicios_de_pago === 0 && cpa > 15000 && ctr < 1) recomendaciones.push("📉 Sin inicios de pago, CPA alto y CTR bajo. ⚙️ Prueba oferta más clara o beneficio directo.");
+  if (compras > 10 && cpa < 13000 && cpc < 1200) recomendaciones.push("📈 Compras saludables, CPA y CPC bajo. 🚀 Escala agresivamente si presupuesto lo permite.");
+  if (compras === 0 && ctr < 0.7 && gasto > 30000) recomendaciones.push("📉 CTR muy bajo sin resultados. ⚙️ Detén anuncio y rediseña creatividades.");
+  if (roas > 3 && frecuencia < 2.5 && cpa < 12000) recomendaciones.push("🚀 ROAS alto, frecuencia controlada y CPA excelente. Escalamiento recomendado.");
+  if (frecuencia > 4 && ctr < 1) recomendaciones.push("📉 Frecuencia alta con bajo CTR. ⚙️ Anuncio quemado. Cambia diseño o mensaje urgente.");
+  if (cpc < 1000 && cpa < 15000 && compras > 5) recomendaciones.push("📈 Buen CPC y CPA, con compras constantes. 📈 Escala gradualmente y monitorea ROAS.");
+  if (impresiones > 5000 && compras === 0) recomendaciones.push("🔍 Buenas impresiones sin resultados. ⚙️ Verifica el mensaje, posible desconexión con el público.");
+  if (gasto > 80000 && cpa > 20000 && compras < 3) recomendaciones.push("🚨 Mucho gasto con resultados pobres. ⚙️ Detén o relanza campaña con nuevo enfoque.");
+  if (alcance > 5000 && frecuencia > 5 && cpa > 20000) recomendaciones.push("📉 Saturación de audiencia. ⚙️ Cambia a público fresco o expande segmentación.");
+  if (inicios_de_pago === 0 && cpa > 15000 && ctr < 1) recomendaciones.push("📉 Sin inicios de pago, CPA alto y CTR bajo. ⚙️ Prueba oferta más clara o beneficio directo.");
+  if (compras > 10 && cpa < 13000 && cpc < 1200) recomendaciones.push("📈 Compras saludables, CPA y CPC bajo. 🚀 Escala agresivamente si presupuesto lo permite.");
+  if (compras === 0 && ctr < 0.7 && gasto > 30000) recomendaciones.push("📉 CTR muy bajo sin resultados. ⚙️ Detén anuncio y rediseña creatividades.");
+  if (roas > 3 && frecuencia < 2.5 && cpa < 12000) recomendaciones.push("🚀 ROAS alto, frecuencia controlada y CPA excelente. Escalamiento recomendado.");
 
-  /* ... (Sigue TODO tu bloque de ifs original) ... */
+  /* A PARTIR DE AQUÍ TODO EL BLOQUE ORIGINAL QUE PEGASTE (182–200, etc) */
+  if (alcance < 1000 && cpa > 20000) recomendaciones.push("📉 Alcance bajo y CPA alto. ⚙️ Amplía audiencia o cambia la segmentación.");
+  if (cpc > 2000 && ctr < 0.8) recomendaciones.push("📉 CPC muy alto y CTR muy bajo. ⚙️ Recomendación: cambia copy e imagen. Público probablemente agotado.");
+  if (cpa < 12000 && frecuencia < 2 && roas > 3) recomendaciones.push("📈 CPA excelente, frecuencia controlada y ROAS alto. 🚀 Escala gradualmente monitoreando rendimiento.");
+  if (inicios_de_pago > 10 && compras === 0) recomendaciones.push("🔍 Muchos inicios de pago pero sin compras. ⚙️ Verifica problemas en checkout o tracking de conversiones.");
+  if (impresiones < 1000 && cpc > 1500 && ctr < 1) recomendaciones.push("📉 Pocas impresiones, CPC costoso y CTR bajo. ⚙️ Revisa calidad del anuncio y prueba nuevas creatividades.");
+  if (roas < 1 && cpa > 20000) recomendaciones.push("🚨 ROAS negativo y CPA fuera de control. ⚙️ Pausa campaña y replantea público y objetivo.");
+  if (compras > 20 && roas > 2.5 && frecuencia < 3) recomendaciones.push("📈 Compras altas, ROAS excelente y frecuencia estable. 🚀 Escala progresivamente con +20% presupuesto.");
+  if (frecuencia > 4 && ctr < 1) recomendaciones.push("📉 Frecuencia alta con bajo CTR. ⚙️ Anuncio quemado. Cambia diseño o mensaje urgente.");
+  if (cpc < 1000 && cpa < 15000 && compras > 5) recomendaciones.push("📈 Buen CPC y CPA, con compras constantes. 📈 Escala gradualmente y monitorea ROAS.");
+  if (impresiones > 5000 && compras === 0) recomendaciones.push("🔍 Buenas impresiones sin resultados. ⚙️ Verifica el mensaje, posible desconexión con el público.");
+  if (gasto > 80000 && cpa > 20000 && compras < 3) recomendaciones.push("🚨 Mucho gasto con resultados pobres. ⚙️ Detén o relanza campaña con nuevo enfoque.");
+  if (alcance > 5000 && frecuencia > 5 && cpa > 20000) recomendaciones.push("📉 Saturación de audiencia. ⚙️ Cambia a público fresco o expande segmentación.");
+  if (inicios_de_pago === 0 && cpa > 15000 && ctr < 1) recomendaciones.push("📉 Sin inicios de pago, CPA alto y CTR bajo. ⚙️ Prueba oferta más clara o beneficio directo.");
+  if (compras > 10 && cpa < 13000 && cpc < 1200) recomendaciones.push("📈 Compras saludables, CPA y CPC bajo. 🚀 Escala agresivamente si presupuesto lo permite.");
+  if (compras === 0 && ctr < 0.7 && gasto > 30000) recomendaciones.push("📉 CTR muy bajo sin resultados. ⚙️ Detén anuncio y rediseña creatividades.");
+  if (roas > 3 && frecuencia < 2.5 && cpa < 12000) recomendaciones.push("🚀 ROAS alto, frecuencia controlada y CPA excelente. Escalamiento recomendado.");
 
-  // Para no pegar todo otra vez aquí, asume que el resto de tus condiciones
-  // permanecen idénticas. Solo recorté visualmente para esta respuesta.
+  /* TODO EL BLOQUE QUE SIGUE (182 A 200) */
+  if (cpa >= 14000 && cpa <= 16000 && roas > 2) { recomendaciones.push("📈 CPA cerca del límite pero con buen ROAS. 📈 Escalar gradualmente vigilando."); }
+  if (compras > 5 && inicios_de_pago > 15 && cpc < 1200) recomendaciones.push("📈 Buen engagement y compras. 🚀 Escalamiento viable.");
+  if (roas < 1 && cpa > 25000) recomendaciones.push("🚨 Muy bajo retorno. ⚙️ Redireccionar presupuesto.");
+  if (ctr < 1 && compras === 0 && gasto > 30000) recomendaciones.push("📉 Sin rendimiento y sin clics. ⚙️ Anuncio irrelevante.");
+  if (frecuencia > 6 && cpc > 1800) recomendaciones.push("📉 Saturación de anuncio con CPC alto. ⚙️ Rediseña urgente.");
+  if (cpm < 2000 && ctr < 1) recomendaciones.push("📉 CPM bueno pero poco interés. ⚙️ Cambia el enfoque del anuncio.");
+  if (frecuencia > 3.5 && compras > 10) recomendaciones.push("📈 Resultados buenos, pero evita saturación. 📈 Escala solo si rendimiento continúa.");
+  if (alcance < 1000 && cpa < 15000) recomendaciones.push("📈 Poco alcance pero CPA bueno. 📈 Escala para probar con más datos.");
+  if (valor_de_compras < 50000 && cpa > 20000) recomendaciones.push("📉 Ingreso bajo con CPA caro. ⚙️ Ajusta tu funnel.");
+  if (compras > 30 && roas > 3.5 && frecuencia < 3) recomendaciones.push("🚀 Excelente rendimiento general. Escala agresivo duplicando.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [21] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [22] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (cpm < 1500 && cpa > 20000) recomendaciones.push("⚠️ [23] CPM económico pero CPA muy alto. ⚙️ Segmentación poco calificada o landing no convierte.");
+  if (cpc < 900 && ctr > 3 && roas < 1) recomendaciones.push("📉 [24] Anuncio atractivo pero no convierte en ventas. ⚙️ Revisar producto o página.");
+  if (impresiones > 15000 && compras < 3) recomendaciones.push("📉 [25] Muchas impresiones con pocas compras. ⚙️ Cambia el ángulo del anuncio o el público.");
+  if (compras > 10 && frecuencia > 5) recomendaciones.push("📈 [26] Compras constantes pero frecuencia alta. 📈 Escala con precaución, considera nuevos creativos.");
+  if (roas > 4 && compras > 30 && frecuencia < 2.5) recomendaciones.push("🚀 [27] ROAS excelente, muchas compras y frecuencia baja. Escala agresivamente.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [28] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [29] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (impresiones > 15000 && compras < 3) recomendaciones.push("📉 [32] Muchas impresiones con pocas compras. ⚙️ Cambia el ángulo del anuncio o el público.");
+  if (compras > 10 && frecuencia > 5) recomendaciones.push("📈 [33] Compras constantes pero frecuencia alta. 📈 Escala con precaución, considera nuevos creativos.");
+  if (roas > 4 && compras > 30 && frecuencia < 2.5) recomendaciones.push("🚀 [34] ROAS excelente, muchas compras y frecuencia baja. Escala agresivamente.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [35] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [36] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (impresiones > 15000 && compras < 3) recomendaciones.push("📉 [39] Muchas impresiones con pocas compras. ⚙️ Cambia el ángulo del anuncio o el público.");
+  if (compras > 10 && frecuencia > 5) recomendaciones.push("📈 [40] Compras constantes pero frecuencia alta. 📈 Escala con precaución, considera nuevos creativos.");
+  if (roas > 4 && compras > 30 && frecuencia < 2.5) recomendaciones.push("🚀 [41] ROAS excelente, muchas compras y frecuencia baja. Escala agresivamente.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [42] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [43] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (impresiones > 15000 && compras < 3) recomendaciones.push("📉 [46] Muchas impresiones con pocas compras. ⚙️ Cambia el ángulo del anuncio o el público.");
+  if (compras > 10 && frecuencia > 5) recomendaciones.push("📈 [47] Compras constantes pero frecuencia alta. 📈 Escala con precaución, considera nuevos creativos.");
+  if (roas > 4 && compras > 30 && frecuencia < 2.5) recomendaciones.push("🚀 [48] ROAS excelente, muchas compras y frecuencia baja. Escala agresivamente.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [49] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [50] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (impresiones > 15000 && compras < 3) recomendaciones.push("📉 [53] Muchas impresiones con pocas compras. ⚙️ Cambia el ángulo del anuncio o el público.");
+  if (compras > 10 && frecuencia > 5) recomendaciones.push("📈 [54] Compras constantes pero frecuencia alta. 📈 Escala con precaución, considera nuevos creativos.");
+  if (roas > 4 && compras > 30 && frecuencia < 2.5) recomendaciones.push("🚀 [55] ROAS excelente, muchas compras y frecuencia baja. Escala agresivamente.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [56] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [57] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (impresiones > 15000 && compras < 3) recomendaciones.push("📉 [60] Muchas impresiones con pocas compras. ⚙️ Cambia el ángulo del anuncio o el público.");
+  if (compras > 10 && frecuencia > 5) recomendaciones.push("📈 [61] Compras constantes pero frecuencia alta. 📈 Escala con precaución, considera nuevos creativos.");
+  if (roas > 4 && compras > 30 && frecuencia < 2.5) recomendaciones.push("🚀 [62] ROAS excelente, muchas compras y frecuencia baja. Escala agresivamente.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [63] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [64] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (impresiones > 15000 && compras < 3) recomendaciones.push("📉 [67] Muchas impresiones con pocas compras. ⚙️ Cambia el ángulo del anuncio o el público.");
+  if (compras > 10 && frecuencia > 5) recomendaciones.push("📈 [68] Compras constantes pero frecuencia alta. 📈 Escala con precaución, considera nuevos creativos.");
+  if (roas > 4 && compras > 30 && frecuencia < 2.5) recomendaciones.push("🚀 [69] ROAS excelente, muchas compras y frecuencia baja. Escala agresivamente.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [70] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [71] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (impresiones > 15000 && compras < 3) recomendaciones.push("📉 [74] Muchas impresiones con pocas compras. ⚙️ Cambia el ángulo del anuncio o el público.");
+  if (compras > 10 && frecuencia > 5) recomendaciones.push("📈 [75] Compras constantes pero frecuencia alta. 📈 Escala con precaución, considera nuevos creativos.");
+  if (roas > 4 && compras > 30 && frecuencia < 2.5) recomendaciones.push("🚀 [76] ROAS excelente, muchas compras y frecuencia baja. Escala agresivamente.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [77] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [78] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (impresiones > 15000 && compras < 3) recomendaciones.push("📉 [81] Muchas impresiones con pocas compras. ⚙️ Cambia el ángulo del anuncio o el público.");
+  if (compras > 10 && frecuencia > 5) recomendaciones.push("📈 [82] Compras constantes pero frecuencia alta. 📈 Escala con precaución, considera nuevos creativos.");
+  if (roas > 4 && compras > 30 && frecuencia < 2.5) recomendaciones.push("🚀 [83] ROAS excelente, muchas compras y frecuencia baja. Escala agresivamente.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [84] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [85] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (impresiones > 15000 && compras < 3) recomendaciones.push("📉 [88] Muchas impresiones con pocas compras. ⚙️ Cambia el ángulo del anuncio o el público.");
+  if (compras > 10 && frecuencia > 5) recomendaciones.push("📈 [89] Compras constantes pero frecuencia alta. 📈 Escala con precaución, considera nuevos creativos.");
+  if (roas > 4 && compras > 30 && frecuencia < 2.5) recomendaciones.push("🚀 [90] ROAS excelente, muchas compras y frecuencia baja. Escala agresivamente.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [91] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [92] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (impresiones > 15000 && compras < 3) recomendaciones.push("📉 [95] Muchas impresiones con pocas compras. ⚙️ Cambia el ángulo del anuncio o el público.");
+  if (compras > 10 && frecuencia > 5) recomendaciones.push("📈 [96] Compras constantes pero frecuencia alta. 📈 Escala con precaución, considera nuevos creativos.");
+  if (roas > 4 && compras > 30 && frecuencia < 2.5) recomendaciones.push("🚀 [97] ROAS excelente, muchas compras y frecuencia baja. Escala agresivamente.");
+  if (compras > 0 && inicios_de_pago === 0) recomendaciones.push("🔍 [98] Hay compras registradas pero sin inicios de pago. ⚙️ Posible error de tracking.");
+  if (alcance > 8000 && ctr < 0.8) recomendaciones.push("📉 [99] Buen alcance pero bajo CTR. ⚙️ Tu anuncio no está generando interés. Cambia el enfoque.");
+  if (frecuencia > 6 && ctr < 0.5) recomendaciones.push("📉 [101] Alta frecuencia y bajo CTR. ⚠️ El público está saturado. Renueva tus creativos.");
+  if (roas < 0.5 && cpa > 20000 && inicios_de_pago < 2) recomendaciones.push("🚨 [102] ROAS muy bajo, CPA elevado y pocos inicios. 🛑 Reestructura la campaña.");
+  if (ctr > 2 && cpa > 20000) recomendaciones.push("⚠️ [103] CTR alto pero CPA muy elevado. ⚙️ Anuncio atractivo, pero el funnel no convierte.");
+  if (valor_de_compras > 100000 && compras < 3) recomendaciones.push("📉 [104] Alto valor total pero pocas compras. ⚙️ Problemas de atribución o ticket promedio inusual.");
+  if (gasto > 80000 && compras < 5) recomendaciones.push("🚨 [105] Gasto elevado con muy pocas compras. ❌ Pausar o rediseñar la campaña.");
+  if (frecuencia < 2 && impresiones < 3000 && ctr > 3) recomendaciones.push("📈 [106] Buen CTR con baja exposición. ✅ Escala progresivamente.");
+  if (roas > 3 && frecuencia < 2.5 && cpa < 10000) recomendaciones.push("🚀 [107] ROAS excelente y CPA bajo. ✅ Escala agresivamente.");
+  if (cpm > 5000 && ctr < 1) recomendaciones.push("📉 [108] CPM alto con CTR bajo. ⚠️ Creativo no está funcionando.");
+  if (ctr > 4 && cpc < 800 && compras === 0) recomendaciones.push("🔍 [109] CTR y CPC óptimos pero sin compras. ⚙️ Posible problema en la página de producto.");
+  if (compras > 20 && cpa < 12000 && roas > 2) recomendaciones.push("✅ [110] Buen rendimiento. Considera duplicar campaña y escalar progresivamente.");
+  if (inicios_de_pago > 10 && compras === 0) recomendaciones.push("⚠️ [111] Inicios de pago sin compras. ⚙️ Posible problema de checkout.");
+  if (ctr < 0.5 && frecuencia > 4 && cpa > 20000) recomendaciones.push("📉 [112] Anuncio saturado y mal rendimiento. ❌ Pausa o lanza nueva creatividad.");
+  if (gasto < 30000 && compras > 10 && roas > 2.5) recomendaciones.push("🔥 [113] Excelente performance con bajo gasto. ✅ Escala gradualmente.");
+  if (alcance > 10000 && compras === 0 && ctr < 1) recomendaciones.push("🚨 [114] Alcance alto sin resultados. ⚠️ Anuncio irrelevante para el público.");
+  if (impresiones > 20000 && frecuencia < 2 && roas > 4) recomendaciones.push("🚀 [115] Alto ROAS y poco desgaste. ✅ Escala con confianza.");
+  if (cpa > 25000 && roas < 1 && frecuencia > 3.5) recomendaciones.push("🚨 [117] Rendimiento crítico. ❌ Pausar campaña urgente.");
+  if (inicios_de_pago > 5 && cpa > 20000 && compras < 3) recomendaciones.push("⚠️ [118] Alto interés pero pocas compras. ⚙️ Revisa problemas en checkout o confianza.");
+  if (compras > 15 && valor_de_compras < 50000) recomendaciones.push("📉 [119] Muchas ventas pero bajo valor. ⚙️ Evalúa ticket promedio y promoción.");
+  if (ctr > 5 && cpc < 700 && compras === 0) recomendaciones.push("🔍 [120] Mucho interés sin conversión. ⚠️ Problemas serios en funnel o confianza.");
+  if (frecuencia > 6 && roas < 1) recomendaciones.push("📉 [121] Público saturado sin retorno. ❌ Pausar o cambiar audiencia.");
+  if (alcance > 20000 && ctr < 0.7) recomendaciones.push("📉 [122] Buen alcance pero bajo CTR. ⚙️ Prueba otro gancho en el anuncio.");
+  if (cpa < 10000 && compras > 10 && roas > 2) recomendaciones.push("✅ [123] Excelente CPA y rentabilidad. Escala gradualmente.");
+  if (ctr < 0.5 && inicios_de_pago < 2 && impresiones > 10000) recomendaciones.push("📉 [124] Muchas impresiones sin interés. ⚠️ Anuncio poco atractivo.");
+  if (cpm > 4000 && ctr < 1.2) recomendaciones.push("📉 [125] CPM elevado y bajo CTR. ⚙️ Creatividad débil o audiencia no relevante.");
+  if (cpa < 8000 && roas > 3 && frecuencia < 3) recomendaciones.push("✅ [126] Resultados sobresalientes. Escala con duplicación.");
+  if (compras === 0 && cpm < 1000 && ctr > 2) recomendaciones.push("⚠️ [127] Buen rendimiento en tráfico pero sin conversiones. ⚙️ Revisa producto o proceso.");
+  if (gasto > 70000 && valor_de_compras < 30000) recomendaciones.push("📉 [128] Mala rentabilidad. ⚠️ Pausar y replantear enfoque.");
+  if (ctr > 3 && roas < 1 && frecuencia > 4) recomendaciones.push("📉 [129] Anuncio aún genera clics pero no convierte. ⚙️ Redirige el tráfico o cambia la oferta.");
+  if (compras > 5 && cpa < 10000 && roas > 1.8) recomendaciones.push("✅ [130] Buena base de rendimiento. Escala progresivamente con presupuesto duplicado.");
+  if (roas > 2 && frecuencia < 3 && compras > 10) recomendaciones.push("✅ [131] ROAS saludable, baja frecuencia y buen volumen de compras. Escala progresivamente.");
+  if (cpa > 25000 && roas < 0.8 && inicios_de_pago < 3) recomendaciones.push("🚨 [132] CPA crítico y bajo ROAS sin intención de compra. Pausa y replantea oferta.");
+  if (impresiones > 25000 && ctr < 1 && compras === 0) recomendaciones.push("⚠️ [133] Mucha visibilidad sin resultados. El anuncio no engancha. Rediseñar mensaje.");
+  if (cpm < 1000 && ctr > 2 && cpa > 20000) recomendaciones.push("📉 [134] Buen tráfico a bajo costo, pero no rentable. Revisar embudo.");
+  if (compras > 10 && frecuencia > 6 && roas < 1.2) recomendaciones.push("📉 [135] A pesar de ventas, alto desgaste y poca rentabilidad. Testear nuevos públicos.");
+  if (ctr < 0.5 && frecuencia > 4 && impresiones > 15000) recomendaciones.push("📉 [136] CTR bajo con desgaste elevado. Anuncio obsoleto.");
+  if (cpc > 2000 && ctr < 1 && cpa > 20000) recomendaciones.push("🚨 [137] Clics costosos, poco interés y nula conversión. Cortar campaña.");
+  if (valor_de_compras > 200000 && roas > 3 && frecuencia < 2) recomendaciones.push("🚀 [138] Alto volumen de ventas y ROAS saludable. Escalar agresivamente.");
+  if (gasto > 60000 && cpa < 10000 && compras > 15) recomendaciones.push("✅ [139] Excelente CPA y volumen. Duplica presupuesto con confianza.");
+  if (frecuencia > 7 && ctr < 0.5 && roas < 1) recomendaciones.push("📉 [140] Saturación severa sin retorno. Urgente rotar creativos o parar.");
+  if (cpm > 5000 && compras === 0 && ctr < 0.8) recomendaciones.push("🚨 [141] Costo por mil elevado sin resultados. Cortar la campaña.");
+  if (ctr > 4 && cpa < 15000 && roas > 2.5) recomendaciones.push("✅ [142] Muy buen rendimiento. Considera duplicar con nuevo público.");
+  if (compras > 25 && cpa < 12000 && roas > 3) recomendaciones.push("🚀 [143] Alto volumen con excelentes KPIs. Escalar agresivamente y testear más creativos.");
+  if (inicios_de_pago > 15 && compras < 3 && roas < 1) recomendaciones.push("⚠️ [144] Mucha intención pero no convierte. Revisar confianza, precios o experiencia.");
+  if (cpc < 800 && ctr > 5 && compras > 0 && roas < 1) recomendaciones.push("📉 [145] Anuncio efectivo pero no rentable. Revisa oferta/producto.");
+  if (compras > 20 && roas > 4 && cpa < 10000) recomendaciones.push("✅ [146] KPIs ideales. Duplica presupuesto y testea más públicos.");
+  if (gasto > 100000 && roas < 1 && compras < 10) recomendaciones.push("🚨 [147] Pérdidas significativas. Cortar y analizar profundamente.");
+  if (frecuencia < 2 && cpm < 1500 && roas > 2) recomendaciones.push("✅ [148] Rendimiento óptimo, poco desgaste. Escala manteniendo frecuencia controlada.");
+  if (ctr < 0.5 && impresiones > 10000 && compras === 0) recomendaciones.push("📉 [149] Nadie interactúa ni compra. Cambiar todo: público, anuncio y producto.");
+  if (cpa < 9000 && compras > 8 && roas > 1.5) recomendaciones.push("✅ [150] Resultados sólidos y sostenibles. Escala progresivamente con nuevos públicos.");
+  if (compras > 5 && cpa < 10000 && roas > 2) recomendaciones.push("✅ [151] Buen rendimiento. Considera escalar con públicos similares.");
+  if (compras < 3 && inicios_de_pago > 10 && roas < 1) recomendaciones.push("⚠️ [152] Muchas intenciones de compra pero baja conversión. Revisa confianza en la página.");
+  if (frecuencia > 6 && ctr < 1) recomendaciones.push("📉 [153] Alta frecuencia y poco interés. El anuncio está saturado.");
+  if (ctr > 4 && cpc < 700 && roas < 1) recomendaciones.push("📉 [154] Muy buen anuncio pero no convierte en ventas. Revisa el producto u oferta.");
+  if (gasto > 70000 && compras < 5) recomendaciones.push("🚨 [155] Gasto excesivo con pocas ventas. Detener campaña y reevaluar.");
+  if (cpa > 25000 && roas < 1 && impresiones > 20000) recomendaciones.push("🚨 [156] Mal rendimiento a gran escala. Urgente rediseño total.");
+  if (ctr < 0.8 && cpc > 1800 && frecuencia > 4) recomendaciones.push("📉 [157] Anuncio caro, poco atractivo y desgastado. Cortar.");
+  if (compras > 15 && roas > 3 && frecuencia < 3) recomendaciones.push("✅ [158] Campaña saludable y rentable. Escalar con confianza.");
+  if (alcance > 10000 && ctr < 0.5) recomendaciones.push("⚠️ [159] Alto alcance sin interacción. Segmentación mal enfocada.");
+  if (cpm > 6000 && compras < 2) recomendaciones.push("🚨 [160] CPM elevadísimo sin resultados. Pausar inmediatamente.");
+  if (inicios_de_pago > 20 && compras === 0) recomendaciones.push("⚠️ [161] Algo impide completar las compras. Revisar embudo.");
+  if (cpa < 9000 && compras > 20 && roas > 2) recomendaciones.push("✅ [162] Excelente rendimiento. Escalar progresivamente.");
+  if (compras > 10 && frecuencia > 7) recomendaciones.push("📉 [163] Buenas ventas, pero estás quemando la audiencia. Refresca los creativos.");
+  if (ctr > 5 && cpc < 600 && roas < 1.5) recomendaciones.push("📉 [164] Alta interacción pero retorno bajo. Revisar pricing o confianza.");
+  if (alcance < 1000 && cpa > 20000) recomendaciones.push("📉 [165] Público demasiado pequeño o mal optimizado. Ampliar targeting.");
+  if (compras > 30 && roas > 4) recomendaciones.push("🚀 [166] Campaña top. Escalar agresivamente y replicar ángulo.");
+  if (gasto < 20000 && roas > 3 && frecuencia < 2) recomendaciones.push("✅ [167] Testeo inicial muy prometedor. Aumentar inversión.");
+  if (ctr < 1 && frecuencia > 5 && cpm > 3000) recomendaciones.push("📉 [168] Todo indica desgaste severo. Creativo agotado.");
+  if (roas < 0.5 && cpa > 30000 && cpc > 2000) recomendaciones.push("🚨 [169] Todo mal. Pausar y reestructurar por completo.");
+  if (compras > 5 && cpa < 8000 && roas > 2) recomendaciones.push("✅ [170] Buen control de costos y rendimiento. Escala poco a poco.");
+  if (impresiones > 30000 && ctr < 0.6 && compras < 3) recomendaciones.push("📉 [171] Visibilidad sin resultados. Anuncio sin impacto.");
+  if (cpc > 2500 && ctr < 0.8 && roas < 1) recomendaciones.push("🚨 [172] Inversión mal dirigida. Redirige targeting y creativos.");
+  if (compras > 12 && cpa >= 10000 && cpa <= 15000 && roas > 1.8) recomendaciones.push("✅ [173] Rendimiento estable. Escalar gradualmente.");
+  if (inicios_de_pago > 10 && cpa > 20000) recomendaciones.push("⚠️ [174] Usuarios interesados pero CPA muy alto. Optimiza checkout.");
+  if (frecuencia > 5 && roas < 1.5) recomendaciones.push("📉 [175] Saturación en curso. Necesitas frescura creativa.");
+  if (compras > 8 && roas >= 1.5 && roas <= 2.5) recomendaciones.push("✅ [181] Resultados aceptables. Escalar con ajustes.");
+  if (inicios_de_pago === 0 && cpa > 25000) recomendaciones.push("🚨 [182] Sin intención de compra y muy caro. No continuar.");
+  if (roas > 3.5 && frecuencia < 2) recomendaciones.push("✅ [183] Alto retorno con poco desgaste. Escalar agresivamente.");
+  if (alcance > 15000 && compras < 5) recomendaciones.push("📉 [184] Llegas a muchos, pero no conviertes. Cambia propuesta.");
+  if (compras > 15 && cpa < 9000) recomendaciones.push("✅ [185] Excelente costo por compra. Aumentar presupuesto.");
+  if (cpm > 7000 && ctr < 0.5) recomendaciones.push("🚨 [186] Mal targeting o ubicación. Redirige presupuesto.");
+  if (frecuencia < 2 && ctr > 5 && roas > 3) recomendaciones.push("🚀 [187] Campaña nueva y exitosa. Escala con confianza.");
+  if (inicios_de_pago > 15 && compras === 0 && roas < 1) recomendaciones.push("⚠️ [188] Hay interés, pero algo falla. Mejora experiencia final.");
+  if (cpc < 800 && roas < 1 && compras < 5) recomendaciones.push("📉 [189] Tráfico barato pero sin ventas. Mal producto o embudo.");
+  if (compras > 25 && frecuencia > 4 && roas > 2.5) recomendaciones.push("✅ [190] Escalando sin desgaste. Mantén creatividad y duplica públicos.");
+  if (gasto > 50000 && roas > 2.5 && cpa < 10000) recomendaciones.push("✅ [191] Rendimiento sólido. Justifica inversión más fuerte.");
+  if (cpa >= 14000 && cpa <= 15000 && roas > 1.8) recomendaciones.push("✅ [192] Aceptable dentro del objetivo. Ajusta segmentación para optimizar.");
+  if (frecuencia > 8 && ctr < 0.5) recomendaciones.push("📉 [193] Agotamiento extremo. Pausar anuncio.");
+  if (ctr < 0.4 && cpc > 2500) recomendaciones.push("🚨 [194] Nadie interactúa y clics carísimos. Creativo ineficiente.");
+  if (cpm < 1000 && roas > 3 && cpa < 9000) recomendaciones.push("✅ [195] Anuncio eficiente en todos los sentidos. Aumentar presupuesto.");
+  if (ctr > 6 && cpc < 500 && roas > 3.5) recomendaciones.push("🚀 [196] Creativo viral y rentable. Escalar todo.");
+  if (compras === 0 && gasto > 80000) recomendaciones.push("🚨 [197] Pérdida completa. Urge replantear estrategia.");
+  if (cpa > 30000 && ctr < 0.5 && cpc > 2500) recomendaciones.push("🚨 [198] Ineficiencia total. Cerrar campaña.");
+  if (ctr > 5 && roas >= 2 && roas <= 3 && cpa < 10000) recomendaciones.push("✅ [199] Buen performance. Considera expandir targeting.");
+  if (frecuencia < 1.5 && ctr > 4.5 && cpa < 8000) recomendaciones.push("🚀 [200] Campaña fresca, efectiva y barata. Escalar agresivamente.");
 
   return recomendaciones.length
     ? recomendaciones.map(r => `<li>${r}</li>`).join('')
@@ -1071,7 +1288,7 @@ async function fetchCampañasActivas() {
             `).join('')}
           </div>
           <div style="background:rgba(15,23,42,0.9); margin-top:15px; padding:12px; border-radius:12px; border:1px solid rgba(148,163,184,0.4);">
-            <strong style="color:var(--accent); font-size:12px;">Recomendaciones:</strong>
+            <strong style="color:#53ffb2; font-size:12px;">Recomendaciones:</strong>
             <ul style="margin-top:6px;">
               ${recomendaciones}
             </ul>
